@@ -36,7 +36,8 @@ public class DefaultLoanScheduleGeneratorFactory implements LoanScheduleGenerato
             case DECLINING_BALANCE:
                 loanScheduleGenerator = new DecliningBalanceInterestLoanScheduleGenerator();
             break;
-            case INVALID:
+            case WHITESPACE:
+            	System.out.println("Place holder for white space implementation");
             break;
         }
 

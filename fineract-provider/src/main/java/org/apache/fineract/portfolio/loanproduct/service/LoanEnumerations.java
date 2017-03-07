@@ -263,8 +263,8 @@ public class LoanEnumerations {
                         AmortizationMethod.EQUAL_PRINCIPAL.getCode(), "Equal principal payments");
             break;
             default:
-                optionData = new EnumOptionData(AmortizationMethod.INVALID.getValue().longValue(), AmortizationMethod.INVALID.getCode(),
-                        "Invalid");
+                optionData = new EnumOptionData(AmortizationMethod.WHITEPACE_INSTALLMENTS.getValue().longValue(), AmortizationMethod.WHITEPACE_INSTALLMENTS.getCode(),
+                        "Structured");
             break;
         }
         return optionData;
@@ -285,7 +285,7 @@ public class LoanEnumerations {
                         InterestMethod.DECLINING_BALANCE.getCode(), "Declining Balance");
             break;
             default:
-                optionData = new EnumOptionData(InterestMethod.INVALID.getValue().longValue(), InterestMethod.INVALID.getCode(), "Invalid");
+                optionData = new EnumOptionData(InterestMethod.WHITESPACE.getValue().longValue(), InterestMethod.WHITESPACE.getCode(), "Structured");
             break;
         }
         return optionData;

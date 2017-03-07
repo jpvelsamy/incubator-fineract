@@ -586,7 +586,8 @@ public final class LoanApplicationTerms {
                 totalInterestCharged = totalInterestChargedForLoanTerm.minus(totalGraceOnInterestCharged);
             break;
             case DECLINING_BALANCE:
-            case INVALID:
+            case WHITESPACE:
+            	System.out.println("placeholder for white space implementation");
             break;
         }
 
@@ -612,11 +613,12 @@ public final class LoanApplicationTerms {
                     case EQUAL_PRINCIPAL:
                         principalForInstallment = calculateEqualPrincipalDueForInstallment(mc, periodNumber);
                     break;
-                    case INVALID:
+                    case WHITEPACE_INSTALLMENTS:
                     break;
                 }
             break;
-            case INVALID:
+            case WHITESPACE:
+            	System.out.println("Placeholder for whitespace implementation");
             break;
         }
 
@@ -686,7 +688,8 @@ public final class LoanApplicationTerms {
                         interestForInstallment = result.interest();
                         interestBroughtForwardDueToGrace = result.interestPaymentDueToGrace();
                     break;
-                    case INVALID:
+                    case WHITEPACE_INSTALLMENTS:
+                    	System.out.println("placeholder for white space implementation");
                     break;
                 }
             break;
@@ -711,7 +714,8 @@ public final class LoanApplicationTerms {
                     interestBroughtForwardDueToGrace = interestBroughtForwardDueToGrace.plus(interestForThisInstallmentBeforeGrace);
                 }
             break;
-            case INVALID:
+            case WHITESPACE:
+            	System.out.println("placeholder for white space implementation");
             break;
         }
 
@@ -739,7 +743,8 @@ public final class LoanApplicationTerms {
             break;
             case DECLINING_BALANCE:
             break;
-            case INVALID:
+            case WHITESPACE:
+            	System.out.println("placeholder for whitespace implementation");
             break;
         }
 

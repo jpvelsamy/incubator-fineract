@@ -306,6 +306,7 @@ public class LoanProductsApiResource {
                 .retrivePreCloseInterestCalculationStrategyOptions();
         final List<FloatingRateData> floatingRateOptions = this.floatingRateReadPlatformService.retrieveLookupActive();
 
+        System.out.println("[2909]Working with changed interest and amortization options");
         return new LoanProductData(productData, chargeOptions, penaltyOptions, paymentTypeOptions, currencyOptions,
                 amortizationTypeOptions, interestTypeOptions, interestCalculationPeriodTypeOptions, repaymentFrequencyTypeOptions,
                 interestRateFrequencyTypeOptions, fundOptions, transactionProcessingStrategyOptions, accountOptions,

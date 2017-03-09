@@ -196,6 +196,8 @@ CREATING A NEW SUBNET FOR THE DBMC
    			  Install vim in webserver through root
    			  update initialTasks.js with 
    			  var baseApiUrl = "https://dbmc-appserver-node:8443/fineract-provider/api/v1?tenantIdentifier=default";
+   			  change Gruntfile.js to point to 0.0.0.0 instead of localhost
+   			  ~/bin/grunt serve
 
 
 NOTE -

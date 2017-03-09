@@ -170,12 +170,12 @@ CREATING A NEW SUBNET FOR THE DBMC
 				https://mifosforge.jira.com/wiki/display/docs/Mifos+X+Installation+on+Linux+-+Ubuntu+Server
 
 				keytool -genkey -keyalg RSA -alias tomcat -keystore /usr/local/tomcat/tomcat.keystore
-			6. http://central.maven.org/maven2/org/drizzle/jdbc/drizzle-jdbc/1.3/drizzle-jdbc-1.3.jar
+			6. wget http://central.maven.org/maven2/org/drizzle/jdbc/drizzle-jdbc/1.3/drizzle-jdbc-1.3.jar
 		5. Building the app in landing machine
 			cd workspace/incubator-fineract/fineract-provider
 			./gradlew war
 		6. Copy the war file
-			sudo docker cp ./build/lib/fineract-provider.war <>:/tmp				
+			sudo docker cp ./build/lib/fineract-provider.war <>:/usr/local/tomcat/webapps
 		7. Clone the ui source code in the workspace folder
 			git  clone git@github.com:jpvelsamy/community-app.git
 		8. For now I am using grunt as the webserver and its not cool.
@@ -199,6 +199,8 @@ CREATING A NEW SUBNET FOR THE DBMC
    			  change Gruntfile.js to point to 0.0.0.0 instead of localhost
    			  ~/bin/grunt serve
 
+
+   		9. In order to serve traffic to dbmc-webserver-node:9000 and dbcm-appserver-node:8443/8080, I am going to setup tinyproxy
 
 NOTE -
 In case if you want to cleanup the docker instances

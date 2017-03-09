@@ -97,3 +97,56 @@ How am I trying to bring up the table in the loanproduct ui
 
 
 
+GOOGLE CLOUD SETUP
+0. Create a new user in google by the name - lasalle.su with password dhuruva#2909
+1. I have taken up a 4 processor 16 gb machine - in asia region
+2. Set up the gcloud for interaction by following instructions in
+https://cloud.google.com/sdk/docs/quickstart-linux
+3.gcloud init
+4. gcloud auth list
+5. gcloud auth login
+6. gcloud documentation
+	https://cloud.google.com/sdk/docs/
+7. Interactive shel
+	https://cloud.google.com/sdk/docs/interactive-gcloud
+
+8. Logging into the machine
+	gcloud compute --project "certain-gearbox-161011" ssh --zone "asia-east1-c" "dev-box-1"	
+9. Byobu documentation
+	http://byobu.co/documentation.html	
+
+
+CREATING A NEW SUBNET FOR THE DBMC
+	1. Install docker
+		https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-16-04
+
+	2. sudo docker network create --subnet=172.18.0.0/16 dbmc-net	
+	3. Installing mysql docker
+		REFER - 
+			1. my sql docker file in git hub for 5.7- https://github.com/docker-library/mysql/blob/eeb0c33dfcad3db46a0dfb24c352d2a1601c7667/5.7/Dockerfile
+			2. Docker reference - https://hub.docker.com/_/mysql/
+		DO - 
+			3.1 I have cloned the mysql official 5.7.17 docker file into my github account. And followed it with updating the docker file with nettools update. And built the docker with 
+				"git clone git@github.com:jpvelsamy/mysql.git"
+				"sudo docker build -t dbmc/mysql:5.7.17 ."
+			3.2 Setting up data folder for mysql  - do this as root user 
+				sudo su
+				mkdir -p /root/docker-data/mysql
+				
+			3.3 sudo docker run -it -h dbmc-mysql-node --ip 172.18.0.5 --add-host dbmc-appserver-node:172.18.0.2 --add-host dbmc-webserver-node:172.18.0.6 --net dbmc-net -v /root/docker-data/mysql:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=password -d dbmc/mysql:5.7.17
+
+			3.3 Access the container using
+				sudo docker exec -it --user root [container id] /bin/bash
+			3.4 mysql -u root -ppassword
+				CREATE DATABASE `mifosplatform-tenants`
+				CREATE DATABASE `mifostenant-default`
+			3.5 Add following machine names in /etc/host
+				172.18.0.5 dbmc-mysql-node
+				172.18.0.2 dbmc-appserver-node
+				172.18.0.6 dbmc-webserver-node
+
+NOTE -
+In case if you want to cleanup the docker instances
+	sudo docker ps -a -q>/tmp/containers.txt
+	while read name; do sudo docker rm ${name}; done</tmp/containers.txt
+

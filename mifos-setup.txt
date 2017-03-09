@@ -1,0 +1,99 @@
+MIFOS SETUP IN MY LOCAL MACHINE
+
+
+Gap analysus
+1. Adding new lables to the presentaiton - for e.g branch hierarchy
+2. Ability to assign org/role
+3. Adding staffs
+4. AAdding roles
+
+
+Roles and permissions
+
+SET GLOBAL sql_mode = '';
+
+https://localhost:8443/fineract-provider/api/v1?tenantIdentifier=default
+
+
+org.apache.fineract.portfolio.loanaccount.loanschedule.domain.AbstractLoanScheduleGenerator.updateAmortization(MathContext, LoanApplicationTerms, int, Money)
+
+
+/fineract-provider/src/main/java/org/apache/fineract/portfolio/loanaccount/loanschedule/domain/LoanScheduleGenerator.java
+/fineract-provider/src/main/java/org/apache/fineract/portfolio/loanaccount/loanschedule/domain/LoanScheduleGeneratorFactory.java
+/fineract-provider/src/main/java/org/apache/fineract/portfolio/loanaccount/loanschedule/domain/DecliningBalanceInterestLoanScheduleGenerator.java
+/fineract-provider/src/main/java/org/apache/fineract/portfolio/loanaccount/loanschedule/domain/FlatInterestLoanScheduleGenerator.java
+
+https://192.168.1.108:8443/fineract-provider/api/v1/loans?
+
+
+Loan submision
+https://192.168.1.108:8443/fineract-provider/api/v1/loans/19?associations=all&exclude=guarantors,futureSchedule
+
+The code that generates the schedule
+1.LoansApiResource.calculateLoanScheduleOrSubmitLoanApplication(String, UriInfo, String)
+	-calculationPlatformService.calculateLoanSchedule
+		-LoanScheduleCalculationPlatformService.calculateLoanSchedule
+			-LoanScheduleCalculationPlatformServiceImpl.calculateLoanSchedule
+				-loanScheduleAssembler.assembleLoanScheduleFrom
+					-loanScheduleAssembler.assembleLoanScheduleFrom
+						-LoanScheduleGenerator loanScheduleGenerator = this.loanScheduleFactory.create(loanApplicationTerms.getInterestMethod());
+						-
+
+
+Createloan product
+https://192.168.1.108:8443/fineract-provider/api/v1/loanproducts/template
+org.apache.fineract.portfolio.loanproduct.api.LoanProductsApiResource.createLoanProduct(String)
+
+org.apache.fineract.portfolio.loanproduct.domain.InterestMethod
+org.apache.fineract.portfolio.loanproduct.service.LoanDropdownReadPlatformServiceImpl.retrieveLoanInterestTypeOptions()
+
+loadsampledata.sql contains sql entty to create loan products
+
+Ok the next step is to pick the right compatible version of  mifos components
+1. Server
+2. WebUi
+3. Android Client
+
+Currently when checked the fineract war file that I downloaded from mifosx site or where it tells the last meaningful 
+release is 16.12.01.RELEASE. Sounds idiotic as it is based on the date
+
+How did I bring Structure payment support in UI
+1. EnumOptionData - added toString method
+2. LoanProductsApiResource.java - added a sysout to indicate that this is a changed sourcecode
+3. AmortizationMethod.java -  Added additional getter method - isWhiteSpace
+	Previous version
+		EQUAL_PRINCIPAL(0, "amortizationType.equal.principal"), //
+		EQUAL_INSTALLMENTS(1, "amortizationType.equal.installments"), //
+	    	INVALID(2, "amortizationType.invalid");
+    	Current version
+	    	WHITEPACE_INSTALLMENTS(0, "amortizationType.equal.whitepsace"),
+	    	EQUAL_PRINCIPAL(1, "amortizationType.equal.principal"), 
+	    	EQUAL_INSTALLMENTS(2, "amortizationType.equal.installments");
+
+
+
+
+4. InterestMethod.java - Added additional type and removed invalid
+5. LoanApplicationTerms
+	-There were lot of places where the amortization method and interest method were accessed
+	-Changed all of them to reflect the whitespace method
+6. DefaultLoanScheduleGeneratorFactory.java
+	-Removed invalid method and added whitespace methods
+7. LoanEnumerations.java
+	-Removed invalide method and added whitespace methods for both amortization and interesttypes
+	-Line 267 and 288
+8. build.grade-Added additional exclusion types for rat
+	-.recommenders/**',	
+	'.metadata/**',
+9. gradle.properties
+	-changed releaseVersion	
+
+How am I trying to bring up the table in the loanproduct ui
+1. I have made changes  CreateLoanProductController.js 
+	- added a new function addLoanSchedule
+
+2. Added a new table in createloanproduct.html
+	-Added support to generate multiiple entrires	
+
+
+

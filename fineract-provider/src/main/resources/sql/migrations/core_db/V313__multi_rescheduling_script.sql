@@ -110,7 +110,7 @@ insert into m_loan_term_variations(`loan_id`, `term_type`, `applicable_date`, `d
 (	
 select
 mlrr.loan_id,
- 9 term_type,
+ 9 as term_type,
  mlrr.reschedule_from_date applicable_date,
  if(ifnull(mlrr.grace_on_principal,0) > ifnull(mlrr.grace_on_interest,0),mlrr.grace_on_principal,mlrr.grace_on_interest) decimal_value,
  null date_value,
@@ -123,7 +123,7 @@ mlrr.loan_id,
  where mlt.reshedule_request_id is not null
  and (mlt.term_type =8 or mlt.term_type = 7)
  and mlt.reshedule_request_id = mlrr.id
- order by mlt.term_type desc limit 1) parent_id
+ order by  1 desc limit 1) parent_id
 from m_loan_reschedule_request mlrr 
 where (mlrr.grace_on_interest is not null or mlrr.grace_on_principal is not null));
 	

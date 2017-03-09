@@ -148,11 +148,11 @@ CREATING A NEW SUBNET FOR THE DBMC
 			3.7 change all localhost:3306 in build.grade using
 				REF - http://vim.wikia.com/wiki/Search_and_replace
 				%s/localhost:3306/dbmc-mysql-node:3306/gc
-			3.8  Download and install java
+			3.8  Download and install java in landing machine
 			curl -LO 'http://download.oracle.com/otn-pub/java/jdk/8u121-b13/e9e7ea248e2c4826b92b3f075a80e441/jdk-8u121-linux-x64.tar.gz' -H 'Cookie: oraclelicense=accept-securebackup-cookie' 
 			sudo update-alternatives --install /usr/bin/java java /home/jpvel/jdk1.8.0_121/bin/java 1
 			export JAVA_HOME=/home/jpvel/jdk1.8.0_121
-			3.9 install the server database
+			3.9 install the server database using the landing machine from workspace/incubator/fineract-provider
 				./gradlew migrateTenantListDB -PdbName=mifosplatform-tenants
 			3.10 Install the defaul tenant database
 				1.  Go to mysql server - its running a docker instance so use either the byobu screen or do docker exec
@@ -161,7 +161,42 @@ CREATING A NEW SUBNET FOR THE DBMC
 				3. SET GLOBAL sql_mode = '';
 				4.  ./gradlew migrateTenantDB -PdbName=mifostenant-default
 		4. Installing tomcat
+			1. Clone jpvelsamy/tomcat into Landingmachine
+			2. Use tomcat 7/jre8 version - that means   you need to go to appropriate folder . do not use alpine for now
 			sudo docker build -t dbmc/tomcat:7.0.75 .
+			3. sudo docker run -it -h  dbmc-appserver-node --ip 172.18.0.2 --add-host dbmc-mysql-node:172.18.0.5 --add-host dbmc-webserver-node:172.18.0.6 --net dbmc-net -d dbmc/tomcat:7.0.75
+			4. sudo docker exec -it --user root [container id] /bin/bash
+			5. Create the keystore
+				https://mifosforge.jira.com/wiki/display/docs/Mifos+X+Installation+on+Linux+-+Ubuntu+Server
+
+				keytool -genkey -keyalg RSA -alias tomcat -keystore /usr/local/tomcat/tomcat.keystore
+			6. http://central.maven.org/maven2/org/drizzle/jdbc/drizzle-jdbc/1.3/drizzle-jdbc-1.3.jar
+		5. Building the app in landing machine
+			cd workspace/incubator-fineract/fineract-provider
+			./gradlew war
+		6. Copy the war file
+			sudo docker cp ./build/lib/fineract-provider.war <>:/tmp				
+		7. Clone the ui source code in the workspace folder
+			git  clone git@github.com:jpvelsamy/community-app.git
+		8. For now I am using grunt as the webserver and its not cool.
+			docker pull node:7.7.1
+			sudo docker run -it -h  dbmc-webserver-node --ip 172.18.0.6  --add-host dbmc-mysql-node:172.18.0.5 --add-host dbmc-appserver-node:172.18.0.2 --net dbmc-net -d node:7.7.1
+			sudo docker exec -it --user root [container id] /bin/bash
+
+			In Landing machine
+			tar -cvzf community-app.tar.gz ./community-app/
+			sudo docker cp ./community-app.tar.gz vibrant_hoover:/home/node/downloads
+			
+			In webserver
+				npm config set prefix ~
+			 	npm install -g bower
+			 	npm install -g grunt-cli
+   			  	~/bin/bower install
+   			  	npm install
+   			  Install vim in webserver through root
+   			  update initialTasks.js with 
+   			  var baseApiUrl = "https://dbmc-appserver-node:8443/fineract-provider/api/v1?tenantIdentifier=default";
+
 
 NOTE -
 In case if you want to cleanup the docker instances

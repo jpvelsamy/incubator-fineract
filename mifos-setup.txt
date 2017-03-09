@@ -82,6 +82,7 @@ How did I bring Structure payment support in UI
 7. LoanEnumerations.java
 	-Removed invalide method and added whitespace methods for both amortization and interesttypes
 	-Line 267 and 288
+	-This is the place where the UI label is set
 8. build.grade-Added additional exclusion types for rat
 	-.recommenders/**',	
 	'.metadata/**',
@@ -94,6 +95,149 @@ How am I trying to bring up the table in the loanproduct ui
 
 2. Added a new table in createloanproduct.html
 	-Added support to generate multiiple entrires	
+
+
+There is something about angular js, that is really attractive to me. I sense that the mvc has found its way in the rightt finally in the web world.
+Atleast it gives me an oppurtunity to work on UI code, with wout wracking my brain. What I really find interesting and helpful is the part where
+the UI code lives entirely separate from the server and the data exchange happens between them completelty through json. That kind of gives me
+a sense that I can confidently work with the belief that it is true mvc.
+
+ResourceFactory.js -  the place where all the controllers are defined.
+loanProductResource - The controller that I am currently interested.
+	- supported methods
+		getAllLoanProducts
+		save
+
+Well I have a hit roadblock when I was trying to perform a save with the changes that I made to the client code
+1. The submit button itself did not work, when I had the schedule table created
+2. The submit failed, stating that the scheduleMatrix field is 
+	The parameter `scheduleMatrix` has been passed and is not supported for this request.
+
+So I am looking around currently, find out who exactly is passing this error back.
+1. its 400, so its indeed server generated
+2. There are bunch of classes that I am going through
+	org.apache.fineract.portfolio.loanproduct.api.LoanProductsApiResource.createLoanProduct(String)
+		This seems like the starting point and it calls commandsSourceWritePlatformService, which manifests as
+			PortfolioCommandSourceWritePlatformServiceImpl	
+	LoanProductConstants - contains all the parameters required for the loan configuration
+	LoanProductConfigurableAttributes - This potentially seems to be place for the change, however i am not really sure at this point
+	LoanProduct - Also seems to be a candidate
+
+However with all this still put in, I am still not sure from where the 400 error is being thrown.
+Ok When I went back and started searching, I could use the error message ' has been passed and is not supported for this request.' 
+and trace it back to the locale json which has all the labels
+	-locale-en.json - line 347 - error.msg.parameter.unsupported
+Then I took that error message and searched for a clue, then I got back the class that was using this error message and it turned out to be
+UnsupportedParameterExceptionMapper. And this is getting called in a class called ErrorHandler, which is what is writing the 400 error
+back. Plus it is being called from some batchservice, that kind of leaves me cold in the trail. Nevertheless, I am going to do dumpStack
+and figure from where the exception is coming from, next.
+
+And I got into another mess
+As I was changing the scheduleMatrix variable in CreateLoanProductController.js from formData to scope.
+I forgot to consistently make the changes in createloanproduct.html which made me go through a lot of
+pain, as I was struggling to find out what was happening. Everything worked(the onclick event, called the function, but there
+was no result, because I have changed the variable. Quite a simple mistake, but a costly price !!!)
+
+Wow, this was a crazy session of coding - March 8 2017
+1. I had first faced the issue not being able to create the schedule . The reason was, I did not properly mention the variiable in createloadproduct.html page where the table was getting created.
+2. Once, I fixed, then I realized that the scheduleMatrix was not properly attached the form data that was submitted
+3. Then I realized that it was form submit rather than a javascript induced form submit - I am still not sure about this though, because what I receive inside the app is a json graph? So how come ?
+4. And finally in the server side, there was a loanvalidation module - LoanProductDataValidator called by LoanProductWritePlatformServiceJpaRepositoryImpl.createLoanProduct(JsonCommand) for validating the incoming 
+json graph,
+5. I added the scheduleMatrix variable and finally made the error go away.
+6. Now I need to complete the loop
+
+
+CREATE TABLE `m_product_loan_schedule` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `installment_no` varchar(100) NOT NULL,
+  `installment_amount` decimal(19,6) DEFAULT NULL,
+  `installment_principal` decimal(19,6) DEFAULT NULL,
+  `installment_interest` decimal(19,6) DEFAULT NULL,  
+  `loan_product_id` bigint(20) NOT NULL,  
+  PRIMARY KEY (`id`),
+  KEY `LOAN_PRODUCT_ID` (`loan_product_id`),  
+  CONSTRAINT `FK_LOAN_PDT` FOREIGN KEY (`loan_product_id`) REFERENCES `m_product_loan` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+
+
+I am trying to watch the sequence of creating loans
+LoanScheduleAssembler.assembleLoanScheduleFrom(LoanApplicationTerms, boolean, List<Holiday>, WorkingDays, JsonElement, List<LoanDisbursementDetails>) line: 612	
+As I was going through this process, I got tripped off by another exception that  said something the loanschedule increment is wrong.
+And it took some time for me to realize that some odd debugging session would have left the tables in inconsistent state. So I truncated all m_loan% tables and reran transaction to success!!
+
+I checked if the fix was ok, but running through the process twice
+
+
+LoanScheduleModel and LoanScheduleModelPeriod - are the data models
+LoanScheduleModelPeriod is an interface and it as two implementations,
+1. For disbursal - 
+2. Another for repayment  - 
+
+org.apache.fineract.portfolio.loanaccount.loanschedule.service.LoanScheduleAssembler.assembleLoanApplicationTermsFrom(JsonElement, LoanProduct)
+
+This seems to be the place of action for creating the schedule
+
+Keeping the system waiting too long on the debugger is actually creating havoc
+
+
+Most of schedule generation code is with the abstractscheduler itself. all we need to do is to give the principal and interest for the current period number
+
+In Loan application terms, I have changed it to use loanproduct reference
+
+There a lot of pending items that need to be addessed
+1. I have not paid respect to localization standards
+2. I have still not added support fo schedule lifecycle for edit, view
+3. I hava one nullpointer issue that i need to addess
+4. I have added apache license for our code, which I need to remove
+5.  I have not added any validation so far
+6.  i have to have a reset button set along with the create schedule
+
+Check-in summary in all the changes meant for the structured payment option - first label
+1. ErrorHandler - printStackTrace added in line 72
+2. CommandSource - Added a sysout in line 100
+3. PortfolioCommandSourceWritePlatformServiceImpl.java - Added sysout line 93
+4. SynchronousCommandProcessingService.java
+	- 3 sysout
+	-  first one at line 88 -   System.out.println("2909 - SyncCommand.process&log- id="+command.commandId()+", url="+command.getUrl()+", product-id="+command.getProductId());
+	- second one at line 90 - System.out.println("2909 - SyncCommand- command is update");
+	- third one at line 94 - System.out.println("2909 - SyncCommand- command is insert");
+5. Loan
+	- Added support for sending in the loan product reference to loan application terms initialization
+		- constructLoanApplicationTerms
+		- getLoanApplicationTerms 
+6. DefaultLoanScheduleGeneratorFactory.
+	- Changed the name from Whitespaceloanschedulegenerator to DhuruvaScheduleGenerator
+	- Added an additional sys			
+7.DhuruvaScheduleGenerator.java
+	-Added new schedule generator
+8. LoanApplicationTerms.java
+	-Added reference to loanproduct
+	-cascading changes into all methods that require creation
+9.LoanScheduleAssembler.java
+	-LoanApplicationTerms - loanProduct reference change
+10. LoanApplicationWritePlatformServiceJpaRepositoryImpl.java
+	Added in
+        	catch(final PersistenceException dve) {
+        	System.out.println("2909-SOME-ERROR");
+        	dve.printStackTrace();
+11.LoanProductConstants.java
+	Added new constants
+	 "scheduleMatrix";
+	  "installNum";
+	  "installAmt";
+	  "installPrincipal";
+	  "installInterest";        	
+12.LoanProductsApiResource.java
+	Added System.out.println("2909- Loan product creation starts here="+apiRequestBodyAsJson);
+13. LoanProduct.java & LoanProductScheduleLineItem.java
+	Added support for loanproduct schedule item
+14.  LoanProductScheduleLineItem.java
+	Added the datamodel support to store the manually created schedule
+15. LoanProductDataValidator.java
+	Added scheduleMatrix column to be considered a valid column
 
 
 
@@ -164,7 +308,7 @@ CREATING A NEW SUBNET FOR THE DBMC
 			1. Clone jpvelsamy/tomcat into Landingmachine
 			2. Use tomcat 7/jre8 version - that means   you need to go to appropriate folder . do not use alpine for now
 			sudo docker build -t dbmc/tomcat:7.0.75 .
-			3. sudo docker run -it -h  dbmc-appserver-node --ip 172.18.0.2 --add-host dbmc-mysql-node:172.18.0.5 --add-host dbmc-webserver-node:172.18.0.6 --net dbmc-net -d dbmc/tomcat:7.0.75
+			3. sudo docker run -it -h  dbmc-appserver-node --ip 172.18.0.2 --add-host dbmc-mysql-node:172.18.0.5 --add-host dbmc-webserver-node:172.18.0.6 --net dbmc-net -p 8080:8080 -p 8443:8443 -d dbmc/tomcat:7.0.75
 			4. sudo docker exec -it --user root [container id] /bin/bash
 			5. Create the keystore
 				https://mifosforge.jira.com/wiki/display/docs/Mifos+X+Installation+on+Linux+-+Ubuntu+Server
@@ -180,7 +324,7 @@ CREATING A NEW SUBNET FOR THE DBMC
 			git  clone git@github.com:jpvelsamy/community-app.git
 		8. For now I am using grunt as the webserver and its not cool.
 			docker pull node:7.7.1
-			sudo docker run -it -h  dbmc-webserver-node --ip 172.18.0.6  --add-host dbmc-mysql-node:172.18.0.5 --add-host dbmc-appserver-node:172.18.0.2 --net dbmc-net -d node:7.7.1
+			sudo docker run -it -h  dbmc-webserver-node --ip 172.18.0.6  --add-host dbmc-mysql-node:172.18.0.5 --add-host dbmc-appserver-node:172.18.0.2 --net dbmc-net -p 0.0.0.0:80:9000 -d node:7.7.1
 			sudo docker exec -it --user root [container id] /bin/bash
 
 			In Landing machine
@@ -195,15 +339,16 @@ CREATING A NEW SUBNET FOR THE DBMC
    			  	npm install
    			  Install vim in webserver through root
    			  update initialTasks.js with 
-   			  var baseApiUrl = "https://dbmc-appserver-node:8443/fineract-provider/api/v1?tenantIdentifier=default";
+   			  var baseApiUrl = "https://104.199.238.10:8443/fineract-provider/api/v1?tenantIdentifier=default";
+   			  remember that needs to be an external ip
    			  change Gruntfile.js to point to 0.0.0.0 instead of localhost
    			  ~/bin/grunt serve
 
-
-   		9. In order to serve traffic to dbmc-webserver-node:9000 and dbcm-appserver-node:8443/8080, I am going to setup tinyproxy
-
+   		
 NOTE -
 In case if you want to cleanup the docker instances
 	sudo docker ps -a -q>/tmp/containers.txt
 	while read name; do sudo docker rm ${name}; done</tmp/containers.txt
 
+auto install with apt-get
+http://askubuntu.com/questions/448358/automating-apt-get-install-with-assume-yes

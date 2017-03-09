@@ -108,7 +108,7 @@ public final class LoanProductDataValidator {
             LoanProductConstants.recalculationRestFrequencyWeekdayParamName,
             LoanProductConstants.recalculationRestFrequencyNthDayParamName, LoanProductConstants.recalculationRestFrequencyOnDayParamName,
             LoanProductConstants.isCompoundingToBePostedAsTransactionParamName, LoanProductConstants.allowCompoundingOnEodParamName,
-            LoanProductConstants.canUseForTopup));
+            LoanProductConstants.canUseForTopup, LoanProductConstants.scheduleMattrix));
 
     private final FromJsonHelper fromApiJsonHelper;
 

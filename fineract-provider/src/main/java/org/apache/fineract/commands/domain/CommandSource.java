@@ -97,6 +97,7 @@ public class CommandSource extends AbstractPersistableCustom<Long> {
     private String transactionId;
 
     public static CommandSource fullEntryFrom(final CommandWrapper wrapper, final JsonCommand command, final AppUser maker) {
+    	System.out.println("2909-CommandSource-name="+wrapper.actionName()+", entity name="+wrapper.entityName()+", href="+wrapper.getHref());
         return new CommandSource(wrapper.actionName(), wrapper.entityName(), wrapper.getHref(), command.entityId(), command.subentityId(),
                 command.json(), maker, DateTime.now());
     }

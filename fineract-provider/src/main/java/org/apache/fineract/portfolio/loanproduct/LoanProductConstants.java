@@ -132,5 +132,9 @@ public interface LoanProductConstants {
 
     public static final String canUseForTopup = "canUseForTopup";
     
-
+    public static final String scheduleMattrix = "scheduleMatrix";
+    public static final String scheduleMatrix_installmentCounter= "installNum";
+    public static final String scheduleMatrix_installmentAmount= "installAmt";
+    public static final String scheduleMatrix_installmentPrincipal = "installPrincipal";
+    public static final String scheduleMatrix_installmentInterest = "installInterest";
 }

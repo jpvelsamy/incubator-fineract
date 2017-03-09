@@ -152,6 +152,7 @@ public class LoanProductsApiResource {
     @Produces({ MediaType.APPLICATION_JSON })
     public String createLoanProduct(final String apiRequestBodyAsJson) {
 
+    	System.out.println("2909- Loan product creation starts here="+apiRequestBodyAsJson);
         final CommandWrapper commandRequest = new CommandWrapperBuilder().createLoanProduct().withJson(apiRequestBodyAsJson).build();
 
         final CommandProcessingResult result = this.commandsSourceWritePlatformService.logCommandSource(commandRequest);

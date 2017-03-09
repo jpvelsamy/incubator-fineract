@@ -48,6 +48,7 @@ import org.apache.fineract.portfolio.loanproduct.domain.InterestCalculationPerio
 import org.apache.fineract.portfolio.loanproduct.domain.InterestMethod;
 import org.apache.fineract.portfolio.loanproduct.domain.InterestRecalculationCompoundingMethod;
 import org.apache.fineract.portfolio.loanproduct.domain.LoanPreClosureInterestCalculationStrategy;
+import org.apache.fineract.portfolio.loanproduct.domain.LoanProduct;
 import org.apache.fineract.portfolio.loanproduct.domain.LoanProductRelatedDetail;
 import org.apache.fineract.portfolio.loanproduct.domain.LoanRescheduleStrategyMethod;
 import org.apache.fineract.portfolio.loanproduct.domain.RecalculationFrequencyType;
@@ -61,7 +62,10 @@ import org.joda.time.Years;
 
 public final class LoanApplicationTerms {
 
-    private final ApplicationCurrency currency;
+	private LoanProduct loanProduct;
+    
+
+	private final ApplicationCurrency currency;
 
     private final Calendar loanCalendar;
     private Integer loanTermFrequency;
@@ -214,7 +218,7 @@ public final class LoanApplicationTerms {
     
     
 
-    public static LoanApplicationTerms assembleFrom(final ApplicationCurrency currency, final Integer loanTermFrequency,
+    public static LoanApplicationTerms assembleFrom(final LoanProduct loanProduct, final ApplicationCurrency currency, final Integer loanTermFrequency,
             final PeriodFrequencyType loanTermPeriodFrequencyType, final Integer numberOfRepayments, final Integer repaymentEvery,
             final PeriodFrequencyType repaymentPeriodFrequencyType, Integer nthDay, DayOfWeekType weekDayType,
             final AmortizationMethod amortizationMethod, final InterestMethod interestMethod, final BigDecimal interestRatePerPeriod,
@@ -238,7 +242,7 @@ public final class LoanApplicationTerms {
 
         final LoanRescheduleStrategyMethod rescheduleStrategyMethod = null;
         final CalendarHistoryDataWrapper calendarHistoryDataWrapper = null;
-        return new LoanApplicationTerms(currency, loanTermFrequency, loanTermPeriodFrequencyType, numberOfRepayments, repaymentEvery,
+        return new LoanApplicationTerms(loanProduct,currency, loanTermFrequency, loanTermPeriodFrequencyType, numberOfRepayments, repaymentEvery,
                 repaymentPeriodFrequencyType, nthDay, weekDayType, amortizationMethod, interestMethod, interestRatePerPeriod,
                 interestRatePeriodFrequencyType, annualNominalInterestRate, interestCalculationPeriodMethod,
                 allowPartialPeriodInterestCalcualtion, principalMoney, expectedDisbursementDate, repaymentsStartingFromDate,
@@ -253,7 +257,7 @@ public final class LoanApplicationTerms {
 
     }
 
-    public static LoanApplicationTerms assembleFrom(final ApplicationCurrency applicationCurrency, final Integer loanTermFrequency,
+    public static LoanApplicationTerms assembleFrom(final LoanProduct loanProduct, final ApplicationCurrency applicationCurrency, final Integer loanTermFrequency,
             final PeriodFrequencyType loanTermPeriodFrequencyType, NthDayType nthDay, DayOfWeekType dayOfWeek,
             final LocalDate expectedDisbursementDate, final LocalDate repaymentsStartingFromDate,
             final LocalDate calculatedRepaymentsStartingFromDate, final Money inArrearsTolerance,
@@ -269,7 +273,7 @@ public final class LoanApplicationTerms {
             final Calendar loanCalendar, final HolidayDetailDTO holidayDetailDTO, final boolean allowCompoundingOnEod) {
         final CalendarHistoryDataWrapper calendarHistoryDataWrapper = null;
 
-        return assembleFrom(applicationCurrency, loanTermFrequency, loanTermPeriodFrequencyType, nthDay, dayOfWeek,
+        return assembleFrom(loanProduct, applicationCurrency, loanTermFrequency, loanTermPeriodFrequencyType, nthDay, dayOfWeek,
                 expectedDisbursementDate, repaymentsStartingFromDate, calculatedRepaymentsStartingFromDate, inArrearsTolerance,
                 loanProductRelatedDetail, multiDisburseLoan, emiAmount, disbursementDatas, maxOutstandingBalance, interestChargedFromDate,
                 principalThresholdForLastInstalment, installmentAmountInMultiplesOf, recalculationFrequencyType, restCalendarInstance,
@@ -278,7 +282,7 @@ public final class LoanApplicationTerms {
                 calendarHistoryDataWrapper, numberOfdays, isSkipRepaymentOnFirstDayofMonth, holidayDetailDTO, allowCompoundingOnEod);
     }
 
-    public static LoanApplicationTerms assembleFrom(final ApplicationCurrency applicationCurrency, final Integer loanTermFrequency,
+    public static LoanApplicationTerms assembleFrom(final LoanProduct loanProduct, final ApplicationCurrency applicationCurrency, final Integer loanTermFrequency,
             final PeriodFrequencyType loanTermPeriodFrequencyType, NthDayType nthDay, DayOfWeekType dayOfWeek,
             final LocalDate expectedDisbursementDate, final LocalDate repaymentsStartingFromDate,
             final LocalDate calculatedRepaymentsStartingFromDate, final Money inArrearsTolerance,
@@ -317,7 +321,7 @@ public final class LoanApplicationTerms {
         final DaysInYearType daysInYearType = loanProductRelatedDetail.fetchDaysInYearType();
         final boolean isInterestRecalculationEnabled = loanProductRelatedDetail.isInterestRecalculationEnabled();
         final boolean isInterestChargedFromDateSameAsDisbursalDateEnabled = false;
-        return new LoanApplicationTerms(applicationCurrency, loanTermFrequency, loanTermPeriodFrequencyType, numberOfRepayments,
+        return new LoanApplicationTerms(loanProduct, applicationCurrency, loanTermFrequency, loanTermPeriodFrequencyType, numberOfRepayments,
                 repaymentEvery, repaymentPeriodFrequencyType, ((nthDay != null) ? nthDay.getValue() : null), dayOfWeek, amortizationMethod,
                 interestMethod, interestRatePerPeriod, interestRatePeriodFrequencyType, annualNominalInterestRate,
                 interestCalculationPeriodMethod, allowPartialPeriodInterestCalcualtion, principalMoney, expectedDisbursementDate,
@@ -331,7 +335,7 @@ public final class LoanApplicationTerms {
                 isSkipRepaymentOnFirstDayofMonth, holidayDetailDTO, allowCompoundingOnEod);
     }
 
-    public static LoanApplicationTerms assembleFrom(final ApplicationCurrency applicationCurrency, final Integer loanTermFrequency,
+    public static LoanApplicationTerms assembleFrom(final LoanProduct loanProduct, final ApplicationCurrency applicationCurrency, final Integer loanTermFrequency,
             final PeriodFrequencyType loanTermPeriodFrequencyType, final LocalDate expectedDisbursementDate,
             final LocalDate repaymentsStartingFromDate, final LocalDate calculatedRepaymentsStartingFromDate,
             final Money inArrearsTolerance, final LoanProductRelatedDetail loanProductRelatedDetail, final boolean multiDisburseLoan,
@@ -376,7 +380,7 @@ public final class LoanApplicationTerms {
         final CalendarHistoryDataWrapper calendarHistoryDataWrapper = null;
         final boolean isInterestChargedFromDateSameAsDisbursalDateEnabled = false;
 
-        return new LoanApplicationTerms(applicationCurrency, loanTermFrequency, loanTermPeriodFrequencyType, numberOfRepayments,
+        return new LoanApplicationTerms(loanProduct, applicationCurrency, loanTermFrequency, loanTermPeriodFrequencyType, numberOfRepayments,
                 repaymentEvery, repaymentPeriodFrequencyType, null, null, amortizationMethod, interestMethod, interestRatePerPeriod,
                 interestRatePeriodFrequencyType, annualNominalInterestRate, interestCalculationPeriodMethod,
                 allowPartialPeriodInterestCalcualtion, principalMoney, expectedDisbursementDate, repaymentsStartingFromDate,
@@ -393,7 +397,7 @@ public final class LoanApplicationTerms {
 
     public static LoanApplicationTerms assembleFrom(final LoanApplicationTerms applicationTerms,
             final List<LoanTermVariationsData> loanTermVariations) {
-        return new LoanApplicationTerms(applicationTerms.currency, applicationTerms.loanTermFrequency,
+        return new LoanApplicationTerms(applicationTerms.loanProduct, applicationTerms.currency, applicationTerms.loanTermFrequency,
                 applicationTerms.loanTermPeriodFrequencyType, applicationTerms.numberOfRepayments, applicationTerms.repaymentEvery,
                 applicationTerms.repaymentPeriodFrequencyType, applicationTerms.nthDay, applicationTerms.weekDayType,
                 applicationTerms.amortizationMethod, applicationTerms.interestMethod, applicationTerms.interestRatePerPeriod,
@@ -416,7 +420,7 @@ public final class LoanApplicationTerms {
                 applicationTerms.allowCompoundingOnEod);
     }
 
-    private LoanApplicationTerms(final ApplicationCurrency currency, final Integer loanTermFrequency,
+    private LoanApplicationTerms(LoanProduct loanProductIncoming, final ApplicationCurrency currency, final Integer loanTermFrequency,
             final PeriodFrequencyType loanTermPeriodFrequencyType, final Integer numberOfRepayments, final Integer repaymentEvery,
             final PeriodFrequencyType repaymentPeriodFrequencyType, final Integer nthDay, final DayOfWeekType weekDayType,
             final AmortizationMethod amortizationMethod, final InterestMethod interestMethod, final BigDecimal interestRatePerPeriod,
@@ -439,6 +443,7 @@ public final class LoanApplicationTerms {
             final Integer numberOfdays, final boolean isSkipRepaymentOnFirstDayofMonth, final HolidayDetailDTO holidayDetailDTO,
             final boolean allowCompoundingOnEod) {
 
+    	this.loanProduct = loanProductIncoming;
         this.currency = currency;
         this.loanTermFrequency = loanTermFrequency;
         this.loanTermPeriodFrequencyType = loanTermPeriodFrequencyType;
@@ -1734,5 +1739,9 @@ public final class LoanApplicationTerms {
     public void updateTotalInterestAccounted(Money totalInterestAccounted){
         this.totalInterestAccounted = totalInterestAccounted;
     }
+    
+    public LoanProduct getLoanProduct() {
+		return loanProduct;
+	}
     
 }

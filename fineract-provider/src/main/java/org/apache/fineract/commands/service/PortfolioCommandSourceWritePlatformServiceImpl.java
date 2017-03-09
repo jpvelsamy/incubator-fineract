@@ -90,9 +90,17 @@ public class PortfolioCommandSourceWritePlatformServiceImpl implements Portfolio
         Integer maxNumberOfRetries = ThreadLocalContextUtil.getTenant().getConnection().getMaxRetriesOnDeadlock();
         Integer maxIntervalBetweenRetries = ThreadLocalContextUtil.getTenant().getConnection().getMaxIntervalBetweenRetries();
         final JsonElement parsedCommand = this.fromApiJsonHelper.parse(json);
+        System.out.println("2909 - Portfolio service- entity name="+wrapper.getEntityName()+", id="+wrapper.getEntityId()+", product id= "+wrapper.getProductId()+", graph="+wrapper.getJson());
+        try
+        {
         command = JsonCommand.from(json, parsedCommand, this.fromApiJsonHelper, wrapper.getEntityName(), wrapper.getEntityId(),
                 wrapper.getSubentityId(), wrapper.getGroupId(), wrapper.getClientId(), wrapper.getLoanId(), wrapper.getSavingsId(),
                 wrapper.getTransactionId(), wrapper.getHref(), wrapper.getProductId());
+        }
+        catch(Exception e)
+        {
+        	e.printStackTrace();
+        }
         while (numberOfRetries <= maxNumberOfRetries) {
             try {
                 result = this.processAndLogCommandService.processAndLogCommand(wrapper, command, isApprovedByChecker);

@@ -69,6 +69,7 @@ public class ErrorHandler extends RuntimeException {
      */
     public static ErrorInfo handler(final RuntimeException exception) {
 
+    	exception.printStackTrace();
         if (exception instanceof AbstractPlatformResourceNotFoundException) {
 
             final PlatformResourceNotFoundExceptionMapper mapper = new PlatformResourceNotFoundExceptionMapper();
@@ -81,7 +82,7 @@ public class ErrorHandler extends RuntimeException {
 
             final UnsupportedParameterExceptionMapper mapper = new UnsupportedParameterExceptionMapper();
             final String errorBody = jsonHelper.toJson(mapper.toResponse((UnsupportedParameterException) exception).getEntity());
-
+            
             return new ErrorInfo(400, 2001, errorBody);
 
         } else if (exception instanceof PlatformApiDataValidationException) {

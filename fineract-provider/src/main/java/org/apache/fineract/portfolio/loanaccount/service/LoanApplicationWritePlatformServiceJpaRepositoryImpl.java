@@ -407,6 +407,8 @@ public class LoanApplicationWritePlatformServiceJpaRepositoryImpl implements Loa
             handleDataIntegrityIssues(command, dve.getMostSpecificCause(), dve);
             return CommandProcessingResult.empty();
         }catch(final PersistenceException dve) {
+        	System.out.println("2909-SOME-ERROR");
+        	dve.printStackTrace();
         	Throwable throwable = ExceptionUtils.getRootCause(dve.getCause()) ;
             handleDataIntegrityIssues(command, throwable, dve);
          	return CommandProcessingResult.empty();

@@ -37,7 +37,8 @@ public class DefaultLoanScheduleGeneratorFactory implements LoanScheduleGenerato
                 loanScheduleGenerator = new DecliningBalanceInterestLoanScheduleGenerator();
             break;
             case WHITESPACE:
-            	System.out.println("Place holder for white space implementation");
+            	System.out.println("2909 Creating a dhuruva loan schedule generator");
+            	loanScheduleGenerator = new DhuruvaScheduleGenerator();
             break;
         }
 

@@ -5369,7 +5369,7 @@ public class Loan extends AbstractPersistableCustom<Long> {
             interestChargedFromDate = getDisbursementDate();
         }
 
-        final LoanApplicationTerms loanApplicationTerms = LoanApplicationTerms.assembleFrom(scheduleGeneratorDTO.getApplicationCurrency(),
+        final LoanApplicationTerms loanApplicationTerms = LoanApplicationTerms.assembleFrom(this.loanProduct, scheduleGeneratorDTO.getApplicationCurrency(),
                 loanTermFrequency, loanTermPeriodFrequencyType, nthDayType, dayOfWeekType, getDisbursementDate(),
                 getExpectedFirstRepaymentOnDate(), scheduleGeneratorDTO.getCalculatedRepaymentsStartingFromDate(), getInArrearsTolerance(),
                 this.loanRepaymentScheduleDetail, this.loanProduct.isMultiDisburseLoan(), this.fixedEmiAmount, disbursementData,
@@ -5639,7 +5639,7 @@ public class Loan extends AbstractPersistableCustom<Long> {
         List<LoanTermVariationsData> loanTermVariations = new ArrayList<>();
         annualNominalInterestRate = constructFloatingInterestRates(annualNominalInterestRate, floatingRateDTO, loanTermVariations);
 
-        return LoanApplicationTerms.assembleFrom(applicationCurrency, loanTermFrequency, loanTermPeriodFrequencyType, nthDayType,
+        return LoanApplicationTerms.assembleFrom(this.loanProduct, applicationCurrency, loanTermFrequency, loanTermPeriodFrequencyType, nthDayType,
                 dayOfWeekType, expectedDisbursementDate, repaymentsStartingFromDate, calculatedRepaymentsStartingFromDate,
                 inArrearsToleranceMoney, this.loanRepaymentScheduleDetail, loanProduct.isMultiDisburseLoan(), emiAmount, disbursementData,
                 maxOutstandingBalance, interestChargedFromDate, this.loanProduct.getPrincipalThresholdForLastInstallment(),

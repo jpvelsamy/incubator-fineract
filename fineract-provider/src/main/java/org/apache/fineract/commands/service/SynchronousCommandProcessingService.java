@@ -85,10 +85,13 @@ public class SynchronousCommandProcessingService implements CommandProcessingSer
         final AppUser maker = this.context.authenticatedUser(wrapper);
 
         CommandSource commandSourceResult = null;
+        System.out.println("2909 - SyncCommand.process&log- id="+command.commandId()+", url="+command.getUrl()+", product-id="+command.getProductId());
         if (command.commandId() != null) {
+        	System.out.println("2909 - SyncCommand- command is update");
             commandSourceResult = this.commandSourceRepository.findOne(command.commandId());
             commandSourceResult.markAsChecked(maker, DateTime.now());
         } else {
+        	System.out.println("2909 - SyncCommand- command is insert");
             commandSourceResult = CommandSource.fullEntryFrom(wrapper, command, maker);
         }
         commandSourceResult.updateResourceId(result.resourceId());

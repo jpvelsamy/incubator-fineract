@@ -1,6 +1,6 @@
 MIFOS SETUP IN MY LOCAL MACHINE
 
-
+https://mifosforge.jira.com/wiki/spaces/docs/pages/74711072/Mifos+X+Installation+on+Linux+Ubuntu+Server
 Gap analysus
 1. Adding new lables to the presentaiton - for e.g branch hierarchy
 2. Ability to assign org/role
@@ -308,7 +308,7 @@ CREATING A NEW SUBNET FOR THE DBMC
 			1. Clone jpvelsamy/tomcat into Landingmachine
 			2. Use tomcat 7/jre8 version - that means   you need to go to appropriate folder . do not use alpine for now
 			sudo docker build -t dbmc/tomcat:7.0.75 .
-			3. sudo docker run -it -h  dbmc-appserver-node --ip 172.18.0.2 --add-host dbmc-mysql-node:172.18.0.5 --add-host dbmc-webserver-node:172.18.0.6 --net dbmc-net -p 8080:8080 -p 8443:8443 -d dbmc/tomcat:7.0.75
+			3. sudo docker run -it -h  dbmc-appserver-node --ip 172.18.0.2 --add-host dbmc-mysql-node:172.18.0.5 --add-host dbmc-webserver-node:172.18.0.6 --net dbmc-net -p 0.0.0.0:8080:8080 -p 0.0.0.0:443:8443 -d dbmc/tomcat:7.0.75
 			4. sudo docker exec -it --user root [container id] /bin/bash
 			5. Create the keystore
 				https://mifosforge.jira.com/wiki/display/docs/Mifos+X+Installation+on+Linux+-+Ubuntu+Server
@@ -325,21 +325,18 @@ CREATING A NEW SUBNET FOR THE DBMC
 		8. For now I am using grunt as the webserver and its not cool.
 			docker pull node:7.7.1
 			sudo docker run -it -h  dbmc-webserver-node --ip 172.18.0.6  --add-host dbmc-mysql-node:172.18.0.5 --add-host dbmc-appserver-node:172.18.0.2 --net dbmc-net -p 0.0.0.0:80:9000 -d node:7.7.1
-			sudo docker exec -it --user root [container id] /bin/bash
+			sudo docker exec -it --user node [container id] /bin/bash
+			mkdir downloads
 
 			In Landing machine
 			tar -cvzf community-app.tar.gz ./community-app/
 			sudo docker cp ./community-app.tar.gz vibrant_hoover:/home/node/downloads
 			
 			In webserver
-				npm config set prefix ~
-			 	npm install -g bower
-			 	npm install -g grunt-cli
-   			  	~/bin/bower install
-   			  	npm install
+				npm config set prefix ~;npm install -g bower;npm install -g grunt-cli;~/bin/bower install;npm install
    			  Install vim in webserver through root
    			  update initialTasks.js with 
-   			  var baseApiUrl = "https://104.199.238.10:8443/fineract-provider/api/v1?tenantIdentifier=default";
+   			  var baseApiUrl = "https://104.199.238.10/fineract-provider/api/v1?tenantIdentifier=default";
    			  remember that needs to be an external ip
    			  change Gruntfile.js to point to 0.0.0.0 instead of localhost
    			  ~/bin/grunt serve
@@ -352,3 +349,30 @@ In case if you want to cleanup the docker instances
 
 auto install with apt-get
 http://askubuntu.com/questions/448358/automating-apt-get-install-with-assume-yes
+
+dbmc site
+http://104.199.238.10/#/
+
+
+lasalle website
+password - 5WhDgVFt
+ip - http://107.167.178.174/
+https://google.bitnami.com/vms/bitnami-wordpress-dm-f10d
+
+
+google cloud url for lasalle
+https://console.cloud.google.com/home/dashboard?project=certain-gearbox-161011&authuser=0
+
+apache fineract installation page
+https://cwiki.apache.org/confluence/display/FINERACT/Fineract+Installation+on+Ubuntu+Server
+
+
+Mifos jira
+https://mifosforge.jira.com/wiki/spaces/MIFOSX/overview
+
+
+I have initialized  a new google cloud shell machine to access the materials in the cloud
+http://www.tecmint.com/add-users-in-linux/
+usermod -aG sudo username
+ sudo mkhomedir_helper jpvel
+ su - jpvel

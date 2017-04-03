@@ -376,3 +376,72 @@ http://www.tecmint.com/add-users-in-linux/
 usermod -aG sudo username
  sudo mkhomedir_helper jpvel
  su - jpvel
+
+
+
+CREATE TABLE DATASOURCE(NAME VARCHAR(50) NOT NULL PRIMARY KEY,MAXACTCONN INTEGER NOT NULL,DRIVERCLASS VARCHAR(50) NOT NULL,IDLECONN INTEGER NOT NULL,USERNAME VARCHAR(50) NULL,PASSWORD VARCHAR(150) NULL,URL VARCHAR(512) NOT NULL,QUERY VARCHAR(100) NULL,WAIT INTEGER NOT NULL);
+
+
+
+INSERT INTO DATASOURCE VALUES('SourceDB',20,'com.mysql.jdbc.Driver',5,'root','cGFzc3dvcmQ=','jdbc:mysql://dbmc-mysql-node:3306/mifostenant-default?useUnicode=true&characterEncoding=UTF-8','select 1',1000);
+
+
+INSERT INTO DATASOURCE VALUES('DestinationDB',20,'com.mysql.jdbc.Driver',5,'root','cGFzc3dvcmQ=','jdbc:mysql://dbmc-mysql-node:3306/mifos_bi?useUnicode=true&characterEncoding=UTF-8','select 1',1000);
+
+Loan product closing not going after 2020
+
+https://lab.lasalle.in/fineract-provider/api/v1/runreports/Client Listing(Pentaho)?output-type=HTML&tenantIdentifier=default&locale=en&dateFormat=dd MMMM yyyy&R_selectOffice=10
+
+at org.apache.fineract.infrastructure.dataqueries.service.GenericDataServiceImpl.fillGenericResultSet(GenericDataServiceImpl.java:59) ~[c
+lasses/:na]
+        at org.apache.fineract.infrastructure.dataqueries.service.ReadReportingServiceImpl.retrieveGenericResultset(ReadReportingServiceImpl.java
+:175) ~[classes/:na]
+        at org.apache.fineract.infrastructure.dataqueries.api.RunreportsApiResource.runReport(RunreportsApiResource.java:121) ~[classes/:na]
+
+
+
+Pentaho reporting adventure
+Good youtube reference for mifos reports
+https://www.youtube.com/watch?v=JgTJCiyOsIQ
+Digital ocean
+https://www.digitalocean.com/community/tutorials/how-to-install-mysql-on-ubuntu-16-04
+Kitchen doc
+http://wiki.pentaho.com/display/EAI/Kitchen+User+Documentation
+Pentaho doc
+http://kettle-pentaho.blogspot.in/p/use-jndi-in-pentaho.html
+MysqL loggin
+http://stackoverflow.com/questions/10903206/enabling-mysql-general-query-log-with-jdbc
+
+The biggest issue that I faced was, that the instruction that was made available in the documentation
+was prettty incomplete. Here are the pointers
+1. DestinationDb and SourceDb were missing in simple-jndi/jndi.properties
+2. Existing configuration was all about hsql
+3. shell scripts were missing in 1.3 release, I had to go and check them out of 1.2 release
+4. Shell scripts had no help section
+5. Data import for mifoswarehouse were all embedded in mifos_bi
+6. 
+
+
+
+
+Reporting investigation
+References
+https://dev.mysql.com/doc/refman/5.5/en/date-and-time-functions.html#function_week
+1. New clients
+ select count(*), week(activation_date) as week_, month(activation_date) as month_, status_enum from m_client where status_enum=300 group by month_, week_, status_enum;
+
+2. Attendance table
+m_client_attendance
+
+
+Dump command
+mysqldump -h dbmc-mysql-node -u root -ppassword mifostenant-default>mifostenant-default.28-03-2017.dmp
+mysqldump -h dbmc-mysql-node -u root -ppassword mifostenant-default>mifostenant-default.03-04-2017.dmp
+
+Copy command - https://cloud.google.com/compute/docs/instances/transfer-files
+gcloud compute copy-files dev-box-2:/home/sid/mifostenant-default.03-04-2017.dmp . 
+
+Key references
+https://mifosforge.jira.com/wiki/spaces/MIFOS/pages/6258835/SQL+Query+Repository
+https://demo.openmf.org/architecture/
+https://mifosforge.jira.com/wiki/spaces/MDZ/pages/176324648/Using+the+New+Address+Module

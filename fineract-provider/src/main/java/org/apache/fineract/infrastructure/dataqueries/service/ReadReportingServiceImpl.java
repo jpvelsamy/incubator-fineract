@@ -186,7 +186,7 @@ public class ReadReportingServiceImpl implements ReadReportingService {
         final Set<String> keys = queryParams.keySet();
         for (final String key : keys) {
             final String pValue = queryParams.get(key);
-            // logger.info("(" + key + " : " + pValue + ")");
+            System.out.println("[DURUVA-REPORT/RunReportApiResource](" + key + " : " + pValue + ")");
             sql = this.genericDataService.replace(sql, key, pValue);
         }
 

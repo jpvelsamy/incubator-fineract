@@ -56,6 +56,7 @@ public class GenericDataServiceImpl implements GenericDataService {
     @Override
     public GenericResultsetData fillGenericResultSet(final String sql) {
 
+    	System.out.println("[DURUVA-REPORT/GenericDataService]-Incoming sql for reporting="+sql);
         final SqlRowSet rs = this.jdbcTemplate.queryForRowSet(sql);
 
         final List<ResultsetColumnHeaderData> columnHeaders = new ArrayList<>();

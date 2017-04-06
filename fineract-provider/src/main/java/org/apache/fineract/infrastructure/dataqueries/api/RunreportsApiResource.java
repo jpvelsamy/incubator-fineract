@@ -118,6 +118,7 @@ public class RunreportsApiResource {
         if (!exportCsv) {
             final Map<String, String> reportParams = getReportParams(queryParams);
 
+            System.out.println("[DURUVA-REPORT/RunReportApiResource]-Incoming report param map="+reportParams);
             final GenericResultsetData result = this.readExtraDataAndReportingService.retrieveGenericResultset(reportName,
                     parameterTypeValue, reportParams);
 

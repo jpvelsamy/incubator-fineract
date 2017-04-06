@@ -87,6 +87,7 @@ rat {
   verbose = true 
   inputDir = './..'
  excludes = [
+	'**/*.sql',	
 	'.recommenders/**',	
 	'.metadata/**',
 	'**/licenses/**',

@@ -445,3 +445,38 @@ Key references
 https://mifosforge.jira.com/wiki/spaces/MIFOS/pages/6258835/SQL+Query+Repository
 https://demo.openmf.org/architecture/
 https://mifosforge.jira.com/wiki/spaces/MDZ/pages/176324648/Using+the+New+Address+Module
+
+
+Starting the tomcat in debugger mode
+Reference - https://blogs.mulesoft.com/dev/tomcat-tcat-server/debugging-your-tomcat-webapp-with-eclipse/
+export JPDA_ADDRESS=8001
+./catalina.sh jpda start
+rm -rf ../logs/*.out;rm -rf ../logs/*.txt;rm -rf ../logs/*.log
+export JAVA_HOME=/home/jpvel/jdk1.8.0_121
+
+       sudo update-alternatives --install /usr/bin/keytool keytool /home/jpvel/jdk1.8.0_121/bin/keytool 1
+   97  sudo update-alternatives --install /usr/bin/java java /home/jpvel/jdk1.8.0_121/bin/java 1
+  119  sudo update-alternatives --install /usr/bin/java java /home/jpvel/jdk1.8.0_121/bin/java 1
+  123  sudo update-alternatives --install /usr/bin/java java /home/jpvel/jdk1.8.0_121/bin/java 1
+  241  sudo update-alternatives --install /usr/bin/java java /home/jpvel/jdk1.8.0_121/bin/java 1
+  242  sudo update-alternatives --install /usr/bin/javac javac /home/jpvel/jdk1.8.0_121/bin/javac 1
+  243  sudo update-alternatives --install /usr/bin/jps jps /home/jpvel/jdk1.8.0_121/bin/jps 1
+  244  sudo update-alternatives --install /usr/bin/jconsole jconsole /home/jpvel/jdk1.8.0_121/bin/jconsole 1
+  295  sudo update-alternatives --config java
+  297  sudo update-alternatives --config jps
+  298  sudo update-alternatives --config javac
+
+
+Installing sublime text
+sudo add-apt-repository -y ppa:webupd8team/sublime-text-2
+
+Monthly wise newly formed center
+
+select count(*) as New_Center_Count, month(center.activation_date) as month_id, master.month_name from m_group center inner join month_master master on month(center.activation_date)=master.month_num where center.closedon_date is null group by month(center.activation_date), master.month_name order by month(center.activation_date) asc;
+
+Monthly wise nely formed center with branch name
+select count(*) as New_Center_Count, month(center.activation_date) as month_id, master.month_name, office.name from m_group center inner join month_master master on month(center.activation_date)=master.month_num inner join m_office office on center.office_id=office.id where center.closedon_date is null group by month(center.activation_date), master.month_name, center.office_id order by month(center.activation_date) asc;
+
+NOTE - Time difference to id a center to be a renewal center or a drop out center or an delayed renewal center will differ for different products
+
+Current center - Centers that have outstanding balances

@@ -450,9 +450,11 @@ https://mifosforge.jira.com/wiki/spaces/MDZ/pages/176324648/Using+the+New+Addres
 Starting the tomcat in debugger mode
 Reference - https://blogs.mulesoft.com/dev/tomcat-tcat-server/debugging-your-tomcat-webapp-with-eclipse/
 export JPDA_ADDRESS=8001
-./catalina.sh jpda start
-rm -rf ../logs/*.out;rm -rf ../logs/*.txt;rm -rf ../logs/*.log
 export JAVA_HOME=/home/jpvel/jdk1.8.0_121
+rm -rf ../logs/*.out;rm -rf ../logs/*.txt;rm -rf ../logs/*.log
+./catalina.sh jpda start
+
+
 
        sudo update-alternatives --install /usr/bin/keytool keytool /home/jpvel/jdk1.8.0_121/bin/keytool 1
    97  sudo update-alternatives --install /usr/bin/java java /home/jpvel/jdk1.8.0_121/bin/java 1
@@ -474,9 +476,406 @@ Monthly wise newly formed center
 
 select count(*) as New_Center_Count, month(center.activation_date) as month_id, master.month_name from m_group center inner join month_master master on month(center.activation_date)=master.month_num where center.closedon_date is null group by month(center.activation_date), master.month_name order by month(center.activation_date) asc;
 
-Monthly wise nely formed center with branch name
+Monthly wise newly formed center with branch name
 select count(*) as New_Center_Count, month(center.activation_date) as month_id, master.month_name, office.name from m_group center inner join month_master master on month(center.activation_date)=master.month_num inner join m_office office on center.office_id=office.id where center.closedon_date is null group by month(center.activation_date), master.month_name, center.office_id order by month(center.activation_date) asc;
 
 NOTE - Time difference to id a center to be a renewal center or a drop out center or an delayed renewal center will differ for different products
 
 Current center - Centers that have outstanding balances
+
+
+Demand vs Collection
+Loan schedule against collection sheet
+Summary only needed
+Day wise breakup
+Overdue also needed
+
+Collection pending is an independent
+
+
+
+Week day data generated using 
+https://www.epochconverter.com/weeks/2017
+set default_week_format = 3;
+
+
+Weekly newly formed centers
+------------------------------------------
+select count(*) as New_Center_Count, week(center.activation_date) as week_no, month(center.activation_date) as month_no, year(center.activation_date) as year_no from m_group center group by week_no, month_no, year_no;
+
+
+
+Weekly newly formed centers with branch name with weekly split up and week numbers
+------------------------------------------------------------------------------------
+DROP VIEW VIEW_GROUPS_ONLY;
+CREATE VIEW VIEW_GROUPS_ONLY AS SELECT COUNT(*) client_count, group_id FROM m_group_client group by group_id;
+
+DROP VIEW VIEW_NEWLY_FORMED_CENTRE;
+CREATE VIEW VIEW_NEWLY_FORMED_CENTRE AS SELECT office.id as office_id, IFNULL(center.staff_id,-1) AS staff_id, count(*) as new_center_count, group_concat(center.display_name) as center_list,week(center.activation_date) as week_number, month(center.activation_date) as month_number, year(center.activation_date) as year_number from m_group center inner join m_office office on center.office_id=office.id inner join VIEW_GROUPS_ONLY mgc on mgc.group_id=center.id where center.closedon_date is null group by office.id, center.staff_id, year(center.activation_date), month(center.activation_date), week(center.activation_date);
+
+
+SELECT ounder.name as "Office", 
+	IFNULL(ms.display_name,'-') as "Loan Officer",
+	week.week_name as "Quarter of Week", 
+	week.start_date as "Week start",
+	week.end_Date as "Week end",
+	month.month_name as "Month", 
+	a.year_number as "Year", 
+	a.new_center_count as "New Centers",
+	a.center_list as "Center list"  
+	FROM m_office mo
+  	JOIN m_office ounder ON ounder.hierarchy LIKE CONCAT(mo.hierarchy, '%')
+  	AND ounder.hierarchy like CONCAT('${currentUserHierarchy}', '%')
+  	INNER JOIN VIEW_NEWLY_FORMED_CENTRE a ON a.office_id=ounder.id 
+  	INNER JOIN week_master week on concat(year_number,'-',month_number,'-',week_number)=week.week_id 
+  	INNER JOIN month_master month on month.month_num=a.month_number 
+  	INNER JOIN m_staff ms ON ms.id=a.staff_id 
+  	WHERE mo.id=${officeId}
+ 	AND (IFNULL(a.staff_id, -10) = "${loanOfficerId}" OR "-1" = "${loanOfficerId}")
+ 	AND a.week_number BETWEEN WEEK('${startDate}') AND WEEK('${endDate}')
+  	ORDER BY year_number, month_number, week_number ASC;
+
+Newly formed center query example
+----------------------------------
+SELECT ounder.name as "Office", 
+	IFNULL(ms.display_name,'-') as "Loan Officer",
+	week.week_name as "Quarter of Week", 
+	week.start_date as "Week start",
+	week.end_Date as "Week end",
+	month.month_name as "Month", 
+	a.year_number as "Year", 
+	a.new_center_count as "New Centers",
+	a.center_list as "Center list"	
+	FROM m_office mo
+  	JOIN m_office ounder ON ounder.hierarchy LIKE CONCAT(mo.hierarchy, '%')
+  	AND ounder.hierarchy like CONCAT('.', '%')
+  	INNER JOIN VIEW_NEWLY_FORMED_CENTRE a ON a.office_id=ounder.id 
+  	INNER JOIN week_master week on concat(year_number,'-',month_number,'-',week_number)=week.week_id 
+  	INNER JOIN month_master month on month.month_num=a.month_number 
+  	INNER JOIN m_staff ms ON ms.id=a.staff_id 
+  	WHERE mo.id=39
+ 	AND (IFNULL(a.staff_id, -10) = "8" OR "-1" = "8")
+ 	AND a.week_number BETWEEN WEEK('2016-06-01') AND WEEK('2016-11-01')
+  	ORDER BY year_number, month_number, week_number ASC;
+
+
+Weekly newly added clients summary with branch wise split up
+------------------------------------------------------------------
+DROP VIEW VIEW_NEWLY_ADDED_CLIENT;
+CREATE VIEW VIEW_NEWLY_ADDED_CLIENT AS SELECT office.id as office_id, IFNULL(client.staff_id,-1) AS staff_id, count(*) as new_client_count, week(client.activation_date) as week_number, month(client.activation_date) as month_number, year(client.activation_date) as year_number from m_client client inner join m_office office on client.office_id=office.id where client.rejectedon_date is null group by office.id, client.staff_id, year(client.activation_date), month(client.activation_date), week(client.activation_date);
+
+SELECT ounder.name as "Office", 
+	IFNULL(ms.display_name,'-') as "Loan Officer",
+	week.week_name as "Quarter of Week", 
+	month.month_name as "Month", 
+	a.year_number as "Year", 
+	a.new_client_count as "New Clients"  
+	FROM m_office mo
+  	JOIN m_office ounder ON ounder.hierarchy LIKE CONCAT(mo.hierarchy, '%')
+  	AND ounder.hierarchy like CONCAT('.', '%')
+  	INNER JOIN VIEW_NEWLY_ADDED_CLIENT a ON a.office_id=ounder.id 
+  	INNER JOIN week_master week on concat(year_number,'-',month_number,'-',week_number)=week.week_id 
+  	INNER JOIN month_master month on month.month_num=a.month_number 
+  	INNER JOIN m_staff ms ON ms.id=a.staff_id 
+  	WHERE mo.id=39
+ 	AND (IFNULL(a.staff_id, -10) = "8" OR "-1" = "8")
+ 	AND a.week_number BETWEEN WEEK('2016-06-01') AND WEEK('2016-11-01')
+  	ORDER BY year_number, month_number, week_number ASC;
+
+Newly added client query example
+----------------------------------
+SELECT ounder.name as "Office", 
+	IFNULL(ms.display_name,'-') as "Loan Officer",
+	week.week_name as "Quarter of Week", 
+	month.month_name as "Month", 
+	a.year_number as "Year", 
+	a.new_client_count as "New Clients"  
+	FROM m_office mo
+  	JOIN m_office ounder ON ounder.hierarchy LIKE CONCAT(mo.hierarchy, '%')
+  	AND ounder.hierarchy like CONCAT('.', '%')
+  	INNER JOIN VIEW_NEWLY_ADDED_CLIENT a ON a.office_id=ounder.id  
+  	INNER JOIN week_master week on concat(year_number,'-',month_number,'-',week_number)=week.week_id 
+  	INNER JOIN month_master month on month.month_num=a.month_number 
+  	INNER JOIN m_staff ms ON ms.id=a.staff_id 
+  	WHERE mo.id=39
+ 	AND (IFNULL(a.staff_id, -10) = "8" OR "-1" = "8")
+ 	AND a.week_number BETWEEN WEEK('2016-06-01') AND WEEK('2016-11-01')
+  	ORDER BY year_number, month_number, week_number ASC;
+
+Demand versus Collection summary Actual query
+-----------------------------------------------
+SELECT 
+      ounder.name 'Office', 
+      IFNULL(ms.display_name,'-') 'Loan Officer',
+    mc.account_no 'Client Account Number',
+    mc.display_name 'Name',
+    mp.name 'Product',
+    ml.account_no 'Loan Account Number',
+    mr.duedate 'Due Date',
+    mr.installment 'Installment',
+    cu.display_symbol 'Currency',
+    mr.principal_amount- IFNULL(mr.principal_completed_derived,0) 'Principal Due',
+    mr.interest_amount- IFNULL(IFNULL(mr.interest_completed_derived,mr.interest_waived_derived),0) 'Interest Due', 
+    IFNULL(mr.fee_charges_amount,0)- IFNULL(IFNULL(mr.fee_charges_completed_derived,mr.fee_charges_waived_derived),0) 'Fees Due', 
+    IFNULL(mr.penalty_charges_amount,0)- IFNULL(IFNULL(mr.penalty_charges_completed_derived,mr.penalty_charges_waived_derived),0) 'Penalty Due',
+      (mr.principal_amount- IFNULL(mr.principal_completed_derived,0)) +
+       (mr.interest_amount- IFNULL(IFNULL(mr.interest_completed_derived,mr.interest_waived_derived),0)) + 
+       (IFNULL(mr.fee_charges_amount,0)- IFNULL(IFNULL(mr.fee_charges_completed_derived,mr.fee_charges_waived_derived),0)) + 
+       (IFNULL(mr.penalty_charges_amount,0)- IFNULL(IFNULL(mr.penalty_charges_completed_derived,mr.penalty_charges_waived_derived),0)) 'Total Due', 
+     mlaa.total_overdue_derived 'Total Overdue',
+     IFNULL(mlt.collection,0) AS "Collection" 
+                     
+ FROM m_office mo
+  JOIN m_office ounder ON ounder.hierarchy LIKE CONCAT(mo.hierarchy, '%')
+  
+  AND ounder.hierarchy like CONCAT('${currentUserHierarchy}', '%')
+  
+  LEFT JOIN m_client mc ON mc.office_id=ounder.id
+  LEFT JOIN m_loan ml ON ml.client_id=mc.id AND ml.loan_status_id=300
+  LEFT JOIN m_loan_arrears_aging mlaa ON mlaa.loan_id=ml.id
+  LEFT JOIN m_loan_repayment_schedule mr ON mr.loan_id=ml.id AND mr.completed_derived=0
+  LEFT JOIN m_product_loan mp ON mp.id=ml.product_id
+  LEFT JOIN m_staff ms ON ms.id=ml.loan_officer_id
+  LEFT JOIN m_currency cu ON cu.code=ml.currency_code 
+  LEFT JOIN collection mlt ON mlt.loan_id=ml.id 
+ WHERE mo.id=${officeId}
+ AND (IFNULL(ml.loan_officer_id, -10) = "${loanOfficerId}" OR "-1" = "${loanOfficerId}")
+ AND mr.duedate BETWEEN '${startDate}' AND '${endDate}'
+ ORDER BY ounder.id,mr.duedate,ml.account_no
+
+Demand Vs Collection summary example
+---------------------------------------
+SELECT ounder.id AS office_id, ms.id as loan_officer_id, center.group_id, mr.duedate, 
+    SUM((mr.principal_amount- IFNULL(mr.principal_completed_derived,0)) +
+    (mr.interest_amount- IFNULL(IFNULL(mr.interest_completed_derived,mr.interest_waived_derived),0)) + 
+    (IFNULL(mr.fee_charges_amount,0)- IFNULL(IFNULL(mr.fee_charges_completed_derived,mr.fee_charges_waived_derived),0)) + 
+    (IFNULL(mr.penalty_charges_amount,0)- IFNULL(IFNULL(mr.penalty_charges_completed_derived,mr.penalty_charges_waived_derived),0))) as 'Payment_Receivables_Current', 
+    SUM(mlaa.total_overdue_derived) AS 'Total_Receivable'
+ FROM m_office mo
+ JOIN m_office ounder ON ounder.hierarchy LIKE CONCAT(mo.hierarchy, '%')
+ AND ounder.hierarchy like CONCAT('.', '%')
+ INNER JOIN m_client mc ON mc.office_id=ounder.id
+ INNER JOIN m_group_client center ON center.client_id=mc.id 
+ INNER JOIN m_loan ml ON ml.client_id=mc.id AND ml.loan_status_id=300
+ INNER JOIN m_loan_arrears_aging mlaa ON mlaa.loan_id=ml.id
+ INNER JOIN m_loan_repayment_schedule mr ON mr.loan_id=ml.id AND mr.completed_derived=0
+ INNER JOIN m_staff ms ON ms.id=ml.loan_officer_id 
+ WHERE mo.id=39
+ AND (IFNULL(ml.loan_officer_id, -10) = "8" OR "-1" = "8")
+ AND mr.duedate BETWEEN '2016-07-01' AND '2016-12-01'
+ GROUP BY ounder.id, ms.id, center.group_id, mr.duedate
+
+The above query is being split up into a view a query on top of it
+0.Test Section
+
+Demand query alone
+
+SELECT SUM(mr.principal_amount)+SUM(mr.interest_amount) as 'Payment_to_be_received', 
+SUM((mr.principal_amount- IFNULL(mr.principal_completed_derived,0)) +
+	(mr.interest_amount- IFNULL(IFNULL(mr.interest_completed_derived,mr.interest_waived_derived),0))) as 'Payment_pending',
+ml.group_id,mr.duedate FROM m_loan_repayment_schedule mr inner join m_loan ml ON ml.id=mr.loan_id where ml.group_id=26 GROUP BY mr.duedate, ml.group_id;
+
+Collection query alone
+SELECT SUM(mlt.amount) AS 'Collection_for_the_day', mlt.transaction_date, mlt.transaction_type_enum, ml.group_id FROM m_loan_transaction mlt INNER JOIN m_loan ml ON mlt.loan_id=ml.id
+WHERE mlt.transaction_type_enum=2
+	AND ml.group_id=26
+	GROUP BY mlt.transaction_date, mlt.transaction_type_enum, ml.group_id;
+
+
+1. View section
+Demand view
+DROP VIEW Demand_Vs_Collection;
+CREATE VIEW Demand_Vs_Collection AS SELECT ounder.id AS office_id, ms.id as loan_officer_id, center.group_id, mr.duedate,
+	SUM(mr.principal_amount)+SUM(mr.interest_amount) as 'Payment_to_be_received', 
+SUM((mr.principal_amount- IFNULL(mr.principal_completed_derived,0)) +
+	(mr.interest_amount- IFNULL(IFNULL(mr.interest_completed_derived,mr.interest_waived_derived),0))) as 'Payment_pending' 	
+	FROM m_office ounder 
+	INNER JOIN m_client mc ON mc.office_id=ounder.id
+	INNER JOIN m_group_client center ON center.client_id=mc.id 
+	INNER JOIN m_loan ml ON ml.client_id=mc.id AND ml.loan_status_id=300
+	INNER JOIN m_loan_arrears_aging mlaa ON mlaa.loan_id=ml.id
+	INNER JOIN m_loan_repayment_schedule mr ON mr.loan_id=ml.id
+	INNER JOIN m_staff ms ON ms.id=ml.loan_officer_id		
+	GROUP BY ounder.id, ms.id, center.group_id, mr.duedate;
+
+Test query
+select * from Demand_Vs_Collection where office_id=39 and loan_officer_id=8 and duedate BETWEEN '2016-07-01' AND '2016-12-01';	
+
+
+Collection view
+DROP VIEW completed_collection_sumtotal;
+CREATE VIEW completed_collection_sumtotal as SELECT sum(a.amount) as Collected_sofar, b.group_id from m_loan_transaction a inner join m_loan b on a.loan_id=b.id inner join m_group d on b.group_id=d.id  WHERE a.transaction_type_enum=2 group by b.group_id;
+
+Test query
+select * from completed_collection_sumtotal WHERE group_id=26;
+
+Collection on given date view
+DROP VIEW collection_per_date;
+CREATE VIEW collection_per_date AS SELECT SUM(mlt.amount) AS 'Collection_for_the_day', mlt.transaction_date, ml.group_id FROM m_loan_transaction mlt INNER JOIN m_loan ml ON mlt.loan_id=ml.id
+WHERE mlt.transaction_type_enum=2 GROUP BY mlt.transaction_date, ml.group_id;
+
+2.Query Section
+SELECT ounder.name 'Office', dvc.duedate AS "Collection date",
+    IFNULL(ms.display_name,'-') 'Loan Officer',
+    mg.display_name as "Group Name",
+    dvc.Payment_to_be_received as "Receivables on Duedate",
+    dvc.Payment_pending as "Payment Pending on Duedate",
+    ccd.Collection_for_the_day as "Collection on Duedate",
+    pcs.Collected_sofar as "Total Completed Collection"
+    FROM m_office mo
+ 	JOIN m_office ounder ON ounder.hierarchy LIKE CONCAT(mo.hierarchy, '%')
+ 	AND ounder.hierarchy like CONCAT('.', '%')
+ 	INNER JOIN Demand_Vs_Collection dvc ON dvc.office_id=ounder.id
+ 	INNER JOIN m_group mg on mg.id=dvc.group_id
+ 	INNER JOIN m_staff ms on ms.id=dvc.loan_officer_id
+ 	INNER JOIN completed_collection_sumtotal pcs ON pcs.group_id=dvc.group_id 
+ 	INNER JOIN collection_per_date ccd ON ccd.group_id=dvc.group_id AND ccd.transaction_date=dvc.duedate 
+	WHERE mo.id=39
+	AND dvc.group_id=204
+ 	AND (IFNULL(dvc.loan_officer_id, -10) = "8" OR "-1" = "8")
+ 	AND dvc.duedate BETWEEN '2016-07-01' AND '2017-2-01'
+
+3. Templatized query
+ 	SELECT ounder.name 'Office', dvc.duedate AS "Collection date",
+    IFNULL(ms.display_name,'-') 'Loan Officer',
+    mg.display_name as "Group Name",
+    dvc.Payment_to_be_received as "Receivables on Duedate",
+    dvc.Payment_pending as "Payment Pending on Duedate",
+    ccd.Collection_for_the_day as "Collection on Duedate",
+    pcs.Collected_sofar as "Total Completed Collection"
+
+    FROM m_office mo
+ 	JOIN m_office ounder ON ounder.hierarchy LIKE CONCAT(mo.hierarchy, '%')
+ 	AND ounder.hierarchy like CONCAT('${currentUserHierarchy}', '%')
+
+ 	INNER JOIN Demand_Vs_Collection dvc ON dvc.office_id=ounder.id
+ 	INNER JOIN m_group mg on mg.id=dvc.group_id
+ 	INNER JOIN m_staff ms on ms.id=dvc.loan_officer_id
+ 	INNER JOIN completed_collection_sumtotal pcs ON pcs.group_id=dvc.group_id 
+ 	INNER JOIN collection_per_date ccd ON ccd.group_id=dvc.group_id AND ccd.transaction_date=dvc.duedate 
+	WHERE mo.id=${officeId}
+ 	AND (IFNULL(dvc.loan_officer_id, -10) = "${loanOfficerId}" OR "-1" = "${loanOfficerId}")
+ 	AND dvc.duedate BETWEEN '${startDate}' AND '${endDate}'
+
+
+SELECT 
+    ounder.name 'Office', 
+    IFNULL(ms.display_name,'-') 'Loan Officer',
+    mgc.group_id as "Group"
+    mp.name 'Product',
+    mr.duedate 'Due Date',
+    mr.installment 'Installment',
+    (mr.principal_amount- IFNULL(mr.principal_completed_derived,0)) +
+    (mr.interest_amount- IFNULL(IFNULL(mr.interest_completed_derived,mr.interest_waived_derived),0)) + 
+    (IFNULL(mr.fee_charges_amount,0)- IFNULL(IFNULL(mr.fee_charges_completed_derived,mr.fee_charges_waived_derived),0)) + 
+    (IFNULL(mr.penalty_charges_amount,0)- IFNULL(IFNULL(mr.penalty_charges_completed_derived,mr.penalty_charges_waived_derived),0)) 'Tobe received for this time', 
+    mlaa.total_overdue_derived 'Total receivable',
+     IFNULL(mlt.collection,0) AS "Collected so far"
+                     
+ FROM m_office mo
+  JOIN m_office ounder ON ounder.hierarchy LIKE CONCAT(mo.hierarchy, '%')
+  
+  AND ounder.hierarchy like CONCAT('.', '%')
+  
+  LEFT JOIN m_client mc ON mc.office_id=ounder.id
+  LEFT JOIN m_loan ml ON ml.client_id=mc.id AND ml.loan_status_id=300
+  LEFT JOIN m_loan_arrears_aging mlaa ON mlaa.loan_id=ml.id
+  LEFT JOIN m_loan_repayment_schedule mr ON mr.loan_id=ml.id AND mr.completed_derived=0
+  LEFT JOIN m_product_loan mp ON mp.id=ml.product_id
+  LEFT JOIN m_staff ms ON ms.id=ml.loan_officer_id
+  LEFT JOIN m_currency cu ON cu.code=ml.currency_code
+  LEFT JOIN collection mlt ON mlt.loan_id=ml.id 
+ WHERE mo.id=39
+ AND (IFNULL(ml.loan_officer_id, -10) = "8" OR "-1" = "8")
+ AND mr.duedate BETWEEN '2016-07-01' AND '2016-08-01'
+ ORDER BY ounder.id,mr.duedate,ml.account_no
+
+
+Opening balance Vs closing balance
+----------------------------------------------
+1. Creating account type master table - /fineract-provider/src/integrationTest/java/org/apache/fineract/integrationtests/common/accounting/Account.java
+
+CREATE TABLE account_type_master (
+	account_type_num tinyint,
+	account_type_name VARCHAR(15)
+)ENGINE=INNODB CHARSET=UTF8;
+
+insert into account_type_master  (account_type_num, account_type_name) values (1, "ASSET"),(2,"LIABILITY"),(3, "EQUITY"),(4,"INCOME"),(5,"EXPENSE");
+
+
+
+
+
+Loan issued centres
+---------------------------------
+
+1. View section
+drop view loans_per_group_date;
+create view loans_per_group_date as select count(mgc.id) loan_count, ml.group_id, year(ml.disbursedon_date) as  year, month(disbursedon_date) as month, week(disbursedon_date) as week from m_loan ml inner join m_group mgc on ml.group_id=mgc.id where ml.disbursedon_date is not null group by ml.group_id, year(disbursedon_date), month(disbursedon_date), week(disbursedon_date);
+
+DROP VIEW LOAN_ISSUED_CENTRE;
+CREATE VIEW LOAN_ISSUED_CENTRE AS SELECT office.id as office_id, IFNULL(center.staff_id,-1) AS staff_id, count(lpg.group_id) as center_count, group_concat(center.display_name) as center_list,week ,month, year from loans_per_group_date lpg inner join m_group center on lpg.group_id=center.id 
+INNER JOIN m_office office on center.office_id=office.id where center.closedon_date is null group by office.id, center.staff_id, year, month, week;
+
+
+Example query
+-------------------------------
+
+SELECT ounder.name as "Office", 
+	IFNULL(ms.display_name,'-') as "Loan Officer",
+	week.week_name as "Quarter of Week", 
+	week.start_date as "Week start",
+	week.end_Date as "Week end",
+	month.month_name as "Month", 
+	a.year as "Year", 
+	a.center_count as "New Centers",
+	a.center_list as "Center list"	
+	FROM m_office mo
+  	JOIN m_office ounder ON ounder.hierarchy LIKE CONCAT(mo.hierarchy, '%')
+  	AND ounder.hierarchy like CONCAT('.', '%')
+  	INNER JOIN LOAN_ISSUED_CENTRE a ON a.office_id=ounder.id 
+  	INNER JOIN week_master week on concat(year,'-',month,'-',week)=week.week_id 
+  	INNER JOIN month_master month on month.month_num=a.month
+  	INNER JOIN m_staff ms ON ms.id=a.staff_id 
+  	WHERE mo.id=39
+ 	AND (IFNULL(a.staff_id, -10) = "8" OR "-1" = "8")
+ 	AND a.week BETWEEN WEEK('2016-06-01') AND WEEK('2016-11-01')
+  	ORDER BY a.year, a.month, a.week ASC;
+
+
+Template query
+------------------------------------
+SELECT ounder.name as "Office", 
+	IFNULL(ms.display_name,'-') as "Loan Officer",
+	week.week_name as "Quarter of Week", 
+	week.start_date as "Week start",
+	week.end_Date as "Week end",
+	month.month_name as "Month", 
+	a.year as "Year", 
+	a.center_count as "New Centers",
+	a.center_list as "Center list"	
+	FROM m_office mo
+  	JOIN m_office ounder ON ounder.hierarchy LIKE CONCAT(mo.hierarchy, '%')
+  	AND ounder.hierarchy like CONCAT('${currentUserHierarchy}', '%')
+  	INNER JOIN LOAN_ISSUED_CENTRE a ON a.office_id=ounder.id 
+  	INNER JOIN week_master week on concat(year,'-',month,'-',week)=week.week_id 
+  	INNER JOIN month_master month on month.month_num=a.month
+  	INNER JOIN m_staff ms ON ms.id=a.staff_id 
+  	WHERE mo.id=${officeId}
+ 	AND (IFNULL(a.staff_id, -10) = "${loanOfficerId}" OR "-1" = "${loanOfficerId}")
+ 	AND a.week BETWEEN WEEK('${startDate}') AND WEEK('${endDate}')
+  	ORDER BY a.year, a.month, a.week ASC;
+
+
+
+
+
+Loan Issue clients
+--------------------------------------
+Total number clients issued with loans 
+
+
+
+
+Opening balance and Closing balance
+--------------------------------------

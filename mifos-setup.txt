@@ -791,16 +791,6 @@ SELECT
  ORDER BY ounder.id,mr.duedate,ml.account_no
 
 
-Opening balance Vs closing balance
-----------------------------------------------
-1. Creating account type master table - /fineract-provider/src/integrationTest/java/org/apache/fineract/integrationtests/common/accounting/Account.java
-
-CREATE TABLE account_type_master (
-	account_type_num tinyint,
-	account_type_name VARCHAR(15)
-)ENGINE=INNODB CHARSET=UTF8;
-
-insert into account_type_master  (account_type_num, account_type_name) values (1, "ASSET"),(2,"LIABILITY"),(3, "EQUITY"),(4,"INCOME"),(5,"EXPENSE");
 
 
 
@@ -879,3 +869,156 @@ Total number clients issued with loans
 
 Opening balance and Closing balance
 --------------------------------------
+1. I am not making the mistake I did twice before now
+2. JournalEntry.type(type_enum) - is filled by JournalEntryType. CREDIT =1  AND DEBIT=2;
+3. JournalEntry.entityType(entity_type_enum) - is filled by PortfolioProductType
+4. 
+
+
+Master data required to map different type accounts needed
+------------------------------------------------------------
+1. Creating account type master table - /fineract-provider/src/integrationTest/java/org/apache/fineract/integrationtests/common/accounting/Account.java
+
+CREATE TABLE account_type_master (
+	account_type_num tinyint,
+	account_type_name VARCHAR(15)
+)ENGINE=INNODB CHARSET=UTF8;
+
+insert into account_type_master  (account_type_num, account_type_name) values (1, "ASSET"),(2,"LIABILITY"),(3, "EQUITY"),(4,"INCOME"),(5,"EXPENSE");
+
+
+Query to obtain all credits on the first day
+------------------------------------------------------------
+All credits on the first date of transaction
+
+SELECT SUM(je.amount) as credit, acc.classification_enum, je.entry_date, mst.account_type_name FROM acc_gl_journal_entry je INNER JOIN acc_gl_account acc ON je.account_id=acc.id INNER JOIN account_type_master mst ON acc.classification_enum=mst.account_type_num WHERE type_enum=1 and entry_date='2016-06-25' group by acc.classification_enum, je.entry_date, mst.account_type_name;
+
+All debits on the first date of transaction
+
+SELECT SUM(je.amount) as debit, acc.classification_enum, je.entry_date, mst.account_type_name FROM acc_gl_journal_entry je INNER JOIN acc_gl_account acc ON je.account_id=acc.id INNER JOIN account_type_master mst ON acc.classification_enum=mst.account_type_num WHERE type_enum=2 and entry_date='2016-06-25' group by acc.classification_enum, je.entry_date, mst.account_type_name;
+
+DROP TABLE IF EXISTS CREDIT_DEBIT_ON_DATE_PER_OFFICE;
+CREATE TABLE CREDIT_DEBIT_ON_DATE_PER_OFFICE (
+entry_date DATE NOT NULL, 
+credit decimal(19,6) default 0, 
+debit decimal(19,6) default 0, 
+classification_type_enum smallint, 
+office_id bigint
+) ENGINE=INNODB DEFAULT CHARSET=UTF8;
+
+
+DROP TABLE IF EXISTS BALANCE_SHEET;
+CREATE TABLE BALANCE_SHEET(
+entry_date DATE NOT NULL, 
+credit decimal(19,6) default 0, 
+debit decimal(19,6) default 0, 
+opening_bal decimal(19,6) default 0,
+closing_bal decimal(19,6) default 0,
+office_id bigint
+) ENGINE=INNODB DEFAULT CHARSET=UTF8;
+
+INSERT all credits statement
+-------------------------------------
+INSERT INTO CREDIT_DEBIT_ON_DATE_PER_OFFICE (entry_date, classification_type_enum, office_id, credit) SELECT je.entry_date, acc.classification_enum, je.office_id, SUM(je.amount) as credit FROM acc_gl_journal_entry je INNER JOIN acc_gl_account acc ON je.account_id=acc.id WHERE type_enum=1 group by acc.classification_enum, je.entry_date, je.office_id;
+
+INSERT all debits statement
+-------------------------------------
+INSERT INTO CREDIT_DEBIT_ON_DATE_PER_OFFICE (entry_date, classification_type_enum, office_id, debit) SELECT je.entry_date, acc.classification_enum,je.office_id, SUM(je.amount) as debit FROM acc_gl_journal_entry je INNER JOIN acc_gl_account acc ON je.account_id=acc.id WHERE type_enum=2 group by acc.classification_enum, je.entry_date, je.office_id;
+
+Instruction for first date
+------------------------------------------
+INSERT INTO BALANCE_SHEET (entry_date, office_id, credit, debit, opening_bal, closing_bal) SELECT entry_date, office_id, SUM(credit) as credit, SUM(debit) as debit, 0 as opening_balance, SUM(credit)- SUM(debit) as closing_balance FROM CREDIT_DEBIT_ON_DATE_PER_OFFICE WHERE entry_date='2016-06-25' group by entry_date,office_id;
+
+DELIMITER ;
+DROP PROCEDURE IF EXISTS generate_balance_sheet;
+
+DELIMITER #
+CREATE PROCEDURE generate_balance_sheet()
+ BEGIN
+ DECLARE office_done BOOLEAN DEFAULT FALSE;	
+ DECLARE officeid INT DEFAULT 0;
+ DECLARE entryDate DATE DEFAULT NULL;
+ DECLARE prevDate DATE DEFAULT NULL;
+ DECLARE openingBalance DECIMAL(15,6) DEFAULT NULL;
+ DECLARE office_cursor CURSOR FOR select DISTINCT office_id as office_id from CREDIT_DEBIT_ON_DATE_PER_OFFICE;
+ DECLARE CONTINUE HANDLER FOR NOT FOUND SET office_done = TRUE;
+
+
+ OPEN office_cursor;
+  find_txn_date:LOOP
+  FETCH office_cursor INTO officeid; 
+  IF office_done THEN 
+   CLOSE office_cursor;
+   LEAVE find_txn_date;
+  END IF; 
+
+  BLOCK2: BEGIN
+  DECLARE date_done BOOLEAN DEFAULT FALSE;	
+  DECLARE date_cursor CURSOR FOR select DISTINCT entry_date as entry_date from CREDIT_DEBIT_ON_DATE_PER_OFFICE WHERE office_id=officeid;
+  DECLARE CONTINUE HANDLER FOR NOT FOUND SET date_done = TRUE;
+  OPEN date_cursor;
+   prepare_balance:LOOP
+   FETCH date_cursor INTO entryDate;
+   IF date_done THEN
+    LEAVE prepare_balance;
+   END IF;
+   IF prevDate IS NULL THEN
+   	SELECT MIN(entry_date) FROM CREDIT_DEBIT_ON_DATE_PER_OFFICE WHERE office_id=officeid INTO prevDate;
+
+   	INSERT INTO BALANCE_SHEET (entry_date, office_id, credit, debit, opening_bal, closing_bal) SELECT entry_date, office_id, SUM(credit) as credit, SUM(debit) as debit, 0 as opening_balance, SUM(credit)- SUM(debit) as closing_balance FROM CREDIT_DEBIT_ON_DATE_PER_OFFICE WHERE entry_date=prevDate group by entry_date,office_id;
+   
+   ELSE 
+    IF entryDate>prevDate THEN
+   	  SELECT closing_bal FROM BALANCE_SHEET WHERE office_id=officeid AND entry_date=prevDate INTO openingBalance;
+
+   	  INSERT INTO BALANCE_SHEET (entry_date, office_id, credit, debit, opening_bal, closing_bal) SELECT entry_date, office_id, SUM(credit) as credit, SUM(debit) as debit, openingBalance as opening_balance, 
+   	  (openingBalance + SUM(credit))- SUM(debit) as closing_balance FROM CREDIT_DEBIT_ON_DATE_PER_OFFICE WHERE entry_date=entryDate group by entry_date,office_id;
+
+   	END IF;
+   END IF;
+   END LOOP prepare_balance;
+   CLOSE date_cursor;
+  END BLOCK2;
+END LOOP find_txn_date;
+END#
+delimiter ;
+
+
+Example query
+---------------------------
+SELECT ounder.name as "Office", 
+	bs.entry_date as "Date",
+	bs.opening_bal as "Opening balance",
+	bs.closing_bal as "Closing balance",
+	bs.credit as "Incoming credit",
+	bs.debit as "Outgoing debit"	
+	FROM m_office mo
+  	JOIN m_office ounder ON ounder.hierarchy LIKE CONCAT(mo.hierarchy, '%')
+  	AND ounder.hierarchy like CONCAT('.', '%')
+  	INNER JOIN BALANCE_SHEET bs ON bs.office_id=ounder.id   	
+  	WHERE mo.id=39 	
+ 	AND bs.entry_date BETWEEN '2016-06-01' AND '2017-03-01'
+  	ORDER BY bs.entry_date;
+
+Template query
+------------------------------------
+SELECT ounder.name as "Office", 
+	bs.entry_date as "Date",
+	bs.opening_bal as "Opening balance",
+	bs.closing_bal as "Closing balance",
+	bs.credit as "Incoming credit",
+	bs.debit as "Outgoing debit"	
+	FROM m_office mo
+  	JOIN m_office ounder ON ounder.hierarchy LIKE CONCAT(mo.hierarchy, '%')
+  	AND ounder.hierarchy like CONCAT('${currentUserHierarchy}', '%')
+  	INNER JOIN BALANCE_SHEET bs ON bs.office_id=ounder.id   	
+  	WHERE mo.id=${officeId} 	
+ 	AND bs.entry_date BETWEEN '${startDate}' AND '${endDate}'
+  	ORDER BY bs.entry_date;
+
+
+
+
+WHERE mo.id=39
+ 	AND (IFNULL(a.staff_id, -10) = "8" OR "-1" = "8")
+ 	AND a.week BETWEEN WEEK('2016-06-01') AND WEEK('2016-11-01')

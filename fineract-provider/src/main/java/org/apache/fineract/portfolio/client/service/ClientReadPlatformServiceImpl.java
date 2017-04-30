@@ -583,8 +583,7 @@ public class ClientReadPlatformServiceImpl implements ClientReadPlatformService 
             builder.append("c.activation_date as activationDate, c.image_id as imageId, ");
             builder.append("c.staff_id as staffId, s.display_name as staffName, ");
             builder.append("c.default_savings_product as savingsProductId, sp.name as savingsProductName, ");
-            builder.append("c.default_savings_account as savingsAccountId, ");
-            builder.append("act.total_balance as totalBalance, act.loan_products as activeProducts , act.total_loans as activeLoans, clo.loan_products as closedProducts, clo.total_loans as closedLoans, clo.loan_status_string as closedStatus ");
+            builder.append("c.default_savings_account as savingsAccountId  ");
             builder.append("from m_client c ");
             builder.append("join m_office o on o.id = c.office_id ");
             builder.append("left join m_client_non_person cnp on cnp.client_id = c.id ");
@@ -600,8 +599,7 @@ public class ClientReadPlatformServiceImpl implements ClientReadPlatformService 
             builder.append("left join m_code_value cvSubStatus on cvSubStatus.id = c.sub_status ");
             builder.append("left join m_code_value cvConstitution on cvConstitution.id = cnp.constitution_cv_id ");
             builder.append("left join m_code_value cvMainBusinessLine on cvMainBusinessLine.id = cnp.main_business_line_cv_id ");
-            builder.append("inner join CLIENT_ACTIVE_LOAN_STATUS act on c.id=act.id ");
-            builder.append("inner join CLIENT_CLOSED_LOAN_STATUS clo on c.id=clo.id ");
+   
 
             this.schema = builder.toString();
         }
@@ -674,16 +672,7 @@ public class ClientReadPlatformServiceImpl implements ClientReadPlatformService 
             final String activatedByFirstname = rs.getString("activatedByFirstname");
             final String activatedByLastname = rs.getString("activatedByLastname");
             
-            final BigDecimal totalBalance = rs.getBigDecimal("totalBalance");
-            final String activeProducts = rs.getString("activeProducts"); 
-
-            final long activeLoans = rs.getLong("activeLoans");
-            
-            final String closedProducts = rs.getString("closedProducts");
-            final String closedStatus = rs.getString("closedStatus");
-
-            final long closedLoans = rs.getLong("closedLoans");
-            
+                      
             
             final Integer legalFormEnum = JdbcSupport.getInteger(rs, "legalFormEnum");
             EnumOptionData legalForm = null;
@@ -704,12 +693,12 @@ public class ClientReadPlatformServiceImpl implements ClientReadPlatformService 
 
             final ClientTimelineData timeline = new ClientTimelineData(submittedOnDate, submittedByUsername, submittedByFirstname,
                     submittedByLastname, activationDate, activatedByUsername, activatedByFirstname, activatedByLastname, closedOnDate,
-                    closedByUsername, closedByFirstname, closedByLastname, totalBalance, activeProducts, activeLoans, closedProducts, closedStatus, closedLoans);
+                    closedByUsername, closedByFirstname, closedByLastname, null, null, 0, null, null, 0);
 
             return ClientData.instance(accountNo, status, subStatus, officeId, officeName, transferToOfficeId, transferToOfficeName, id,
                     firstname, middlename, lastname, fullname, displayName, externalId, mobileNo, dateOfBirth, gender, activationDate,
                     imageId, staffId, staffName, timeline, savingsProductId, savingsProductName, savingsAccountId, clienttype,
-                    classification, legalForm, clientNonPerson, closedLoans, activeLoans, totalBalance, closedProducts, activeProducts, closedStatus, 0);
+                    classification, legalForm, clientNonPerson, 0, 0, null, null, null, null, 0);
 
         }
     }

@@ -295,7 +295,8 @@ public class GroupsApiResource {
             group = GroupGeneralData.withTemplate(templateGroup, group);
         }
 
-        return this.groupGeneralApiJsonSerializer.serialize(settings, group, GroupingTypesApiConstants.GROUP_RESPONSE_DATA_PARAMETERS);
+        String output = this.groupGeneralApiJsonSerializer.serialize(settings, group, GroupingTypesApiConstants.GROUP_RESPONSE_DATA_PARAMETERS);
+        return output;
     }
 
     @POST

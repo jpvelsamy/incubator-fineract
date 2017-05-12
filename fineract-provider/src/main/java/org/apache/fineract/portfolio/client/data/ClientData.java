@@ -18,6 +18,7 @@
  */
 package org.apache.fineract.portfolio.client.data;
 
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
 
@@ -103,13 +104,24 @@ final public class ClientData implements Comparable<ClientData> {
 	private final Boolean isAddressEnabled;
 
     private final List<DatatableData> datatables;
+    
+    //Added by Senthil
+    
+    private final long closedLoans;
+    private final long activeLoans;
+    private final BigDecimal totalBalance;
+    private final String closedProducts;
+    private final String activeProducts;
+    private final String closedStatus;
+    private final double attendancePercentage;
 
     public static ClientData template(final Long officeId, final LocalDate joinedDate, final Collection<OfficeData> officeOptions,
             final Collection<StaffData> staffOptions, final Collection<CodeValueData> narrations,
             final Collection<CodeValueData> genderOptions, final Collection<SavingsProductData> savingProductOptions,
             final Collection<CodeValueData> clientTypeOptions, final Collection<CodeValueData> clientClassificationOptions, final Collection<CodeValueData> clientNonPersonConstitutionOptions,
             final Collection<CodeValueData> clientNonPersonMainBusinessLineOptions, final List<EnumOptionData> clientLegalFormOptions, final AddressData address,
-            final Boolean isAddressEnabled, final List<DatatableData> datatables) {
+            final Boolean isAddressEnabled, final List<DatatableData> datatables, final long closedLoans, final long activeLoans, final BigDecimal totalBalance, final String closedProducts, 
+     		final String activeProducts, final String closedStatus, final double attendancePercentage) {
         final String accountNo = null;
         final EnumOptionData status = null;
         final CodeValueData subStatus = null;
@@ -144,7 +156,8 @@ final public class ClientData implements Comparable<ClientData> {
                 staffName, officeOptions, groups, staffOptions, narrations, genderOptions, timeline, savingProductOptions,
                 savingsProductId, savingsProductName, savingsAccountId, savingAccountOptions, clientType, clientClassification,
                 clientTypeOptions, clientClassificationOptions, clientNonPersonConstitutionOptions, clientNonPersonMainBusinessLineOptions, 
-                clientNonPersonDetails, clientLegalFormOptions, legalForm,address, isAddressEnabled, datatables);
+                clientNonPersonDetails, clientLegalFormOptions, legalForm,address, isAddressEnabled, datatables, closedLoans, activeLoans, totalBalance, closedProducts, activeProducts,
+        		closedStatus, attendancePercentage);
 
     }
 
@@ -159,7 +172,8 @@ final public class ClientData implements Comparable<ClientData> {
                 clientData.savingsProductName, clientData.savingsAccountId, clientData.savingAccountOptions, clientData.clientType,
                 clientData.clientClassification, templateData.clientTypeOptions, templateData.clientClassificationOptions, 
                 templateData.clientNonPersonConstitutionOptions, templateData.clientNonPersonMainBusinessLineOptions, clientData.clientNonPersonDetails,
-                templateData.clientLegalFormOptions, clientData.legalForm, clientData.address,clientData.isAddressEnabled, null);
+                templateData.clientLegalFormOptions, clientData.legalForm, clientData.address,clientData.isAddressEnabled, null, clientData.closedLoans, clientData.activeLoans, clientData.totalBalance, clientData.closedProducts,
+         		clientData.activeProducts, clientData.closedStatus, clientData.attendancePercentage);
 
     }
 
@@ -175,7 +189,8 @@ final public class ClientData implements Comparable<ClientData> {
                 clientData.savingsProductName, clientData.savingsAccountId, savingAccountOptions, clientData.clientType,
                 clientData.clientClassification, clientData.clientTypeOptions, clientData.clientClassificationOptions,
                 clientData.clientNonPersonConstitutionOptions, clientData.clientNonPersonMainBusinessLineOptions, clientData.clientNonPersonDetails,
-                clientData.clientLegalFormOptions, clientData.legalForm,clientData.address, clientData.isAddressEnabled, null);
+                clientData.clientLegalFormOptions, clientData.legalForm,clientData.address, clientData.isAddressEnabled, null, clientData.closedLoans, clientData.activeLoans, clientData.totalBalance, clientData.closedProducts,
+         		clientData.activeProducts, clientData.closedStatus, clientData.attendancePercentage);
 
     }
 
@@ -189,12 +204,14 @@ final public class ClientData implements Comparable<ClientData> {
                 clientData.savingAccountOptions, clientData.clientType, clientData.clientClassification, clientData.clientTypeOptions,
                 clientData.clientClassificationOptions, clientData.clientNonPersonConstitutionOptions, clientData.clientNonPersonMainBusinessLineOptions, 
                 clientData.clientNonPersonDetails, clientData.clientLegalFormOptions, clientData.legalForm,clientData.address,
-				clientData.isAddressEnabled, null);
+				clientData.isAddressEnabled, null, clientData.closedLoans, clientData.activeLoans, clientData.totalBalance, clientData.closedProducts,
+		 		clientData.activeProducts, clientData.closedStatus, clientData.attendancePercentage);
 
     }
 
     public static ClientData clientIdentifier(final Long id, final String accountNo, final String firstname, final String middlename,
-            final String lastname, final String fullname, final String displayName, final Long officeId, final String officeName) {
+            final String lastname, final String fullname, final String displayName, final Long officeId, final String officeName, final long closedLoans, final long activeLoans, final BigDecimal totalBalance, final String closedProducts, 
+     		final String activeProducts, final String closedStatus, final double attendancePercentage) {
 
         final Long transferToOfficeId = null;
         final String transferToOfficeName = null;
@@ -233,7 +250,7 @@ final public class ClientData implements Comparable<ClientData> {
                 staffName, allowedOffices, groups, staffOptions, closureReasons, genderOptions, timeline, savingProductOptions,
                 savingsProductId, savingsProductName, savingsAccountId, savingAccountOptions, clientType, clientClassification,
                 clientTypeOptions, clientClassificationOptions, clientNonPersonConstitutionOptions, clientNonPersonMainBusinessLineOptions, 
-                clientNonPerson, clientLegalFormOptions, legalForm,null,null, null);
+                clientNonPerson, clientLegalFormOptions, legalForm,null,null, null, closedLoans, activeLoans, totalBalance, closedProducts, activeProducts, closedStatus, attendancePercentage);
     }
 
     public static ClientData lookup(final Long id, final String displayName, final Long officeId, final String officeName) {
@@ -279,7 +296,7 @@ final public class ClientData implements Comparable<ClientData> {
                 staffName, allowedOffices, groups, staffOptions, closureReasons, genderOptions, timeline, savingProductOptions,
                 savingsProductId, savingsProductName, savingsAccountId, savingAccountOptions, clientType, clientClassification,
                 clientTypeOptions, clientClassificationOptions, clientNonPersonConstitutionOptions, clientNonPersonMainBusinessLineOptions, 
-                clientNonPerson, clientLegalFormOptions, legalForm,null,null, null);
+                clientNonPerson, clientLegalFormOptions, legalForm,null,null, null, 0, 0, null, null, null, null, 0);
 
     }
 
@@ -289,7 +306,8 @@ final public class ClientData implements Comparable<ClientData> {
             final String externalId, final String mobileNo, final LocalDate dateOfBirth, final CodeValueData gender,
             final LocalDate activationDate, final Long imageId, final Long staffId, final String staffName,
             final ClientTimelineData timeline, final Long savingsProductId, final String savingsProductName, final Long savingsAccountId,
-            final CodeValueData clientType, final CodeValueData clientClassification, final EnumOptionData legalForm, final ClientNonPersonData clientNonPerson) {
+            final CodeValueData clientType, final CodeValueData clientClassification, final EnumOptionData legalForm, final ClientNonPersonData clientNonPerson, final long closedLoans, final long activeLoans, final BigDecimal totalBalance, final String closedProducts, 
+     		final String activeProducts, final String closedStatus, final double attendancePercentage) {
 
         final Collection<OfficeData> allowedOffices = null;
         final Collection<GroupGeneralData> groups = null;
@@ -302,12 +320,13 @@ final public class ClientData implements Comparable<ClientData> {
         final Collection<CodeValueData> clientNonPersonConstitutionOptions = null;
         final Collection<CodeValueData> clientNonPersonMainBusinessLineOptions = null;
         final List<EnumOptionData> clientLegalFormOptions = null;
+      
         return new ClientData(accountNo, status, subStatus, officeId, officeName, transferToOfficeId, transferToOfficeName, id, firstname,
                 middlename, lastname, fullname, displayName, externalId, mobileNo, dateOfBirth, gender, activationDate, imageId, staffId,
                 staffName, allowedOffices, groups, staffOptions, closureReasons, genderOptions, timeline, savingProductOptions,
                 savingsProductId, savingsProductName, savingsAccountId, null, clientType, clientClassification, clientTypeOptions,
                 clientClassificationOptions, clientNonPersonConstitutionOptions, clientNonPersonMainBusinessLineOptions, clientNonPerson,
-                clientLegalFormOptions, legalForm,null,null, null);
+                clientLegalFormOptions, legalForm,null,null, null, closedLoans, activeLoans, totalBalance, closedProducts, activeProducts, closedStatus, attendancePercentage);
 
     }
 
@@ -325,7 +344,8 @@ final public class ClientData implements Comparable<ClientData> {
             final Collection<CodeValueData> clientClassificationOptions, final Collection<CodeValueData> clientNonPersonConstitutionOptions,
             final Collection<CodeValueData> clientNonPersonMainBusinessLineOptions, final ClientNonPersonData clientNonPerson,
             final List<EnumOptionData> clientLegalFormOptions, final EnumOptionData legalForm, final AddressData address,
-            final Boolean isAddressEnabled, final List<DatatableData> datatables) {
+            final Boolean isAddressEnabled, final List<DatatableData> datatables, final long closedLoans, final long activeLoans, final BigDecimal totalBalance, final String closedProducts, 
+            final String activeProducts, final String closedStatus, final double attendancePercentage) {
         this.accountNo = accountNo;
         this.status = status;
         if (status != null) {
@@ -388,6 +408,16 @@ final public class ClientData implements Comparable<ClientData> {
       	this.address = address;
 		this.isAddressEnabled = isAddressEnabled;
         this.datatables = datatables;
+        
+        //Added by Senthil
+        
+        this.closedLoans = closedLoans;
+        this.activeLoans = activeLoans;
+        this.totalBalance = totalBalance;
+        this.closedProducts = closedProducts;
+        this.activeProducts = activeProducts;
+        this.closedStatus = closedStatus;
+        this.attendancePercentage = attendancePercentage;
 
     }
 
@@ -472,5 +502,33 @@ final public class ClientData implements Comparable<ClientData> {
     
     public Boolean getIsAddressEnabled() {
 		return this.isAddressEnabled;
+	}
+
+	public long getClosedLoans() {
+		return closedLoans;
+	}
+
+	public long getActiveLoans() {
+		return activeLoans;
+	}
+
+	public BigDecimal gettotalBalance() {
+		return totalBalance;
+	}
+
+	public String getActiveProducts() {
+		return activeProducts;
+	}
+
+	public String getClosedProducts() {
+		return closedProducts;
+	}
+
+	public String getClosedStatus() {
+		return closedStatus;
+	}
+
+	public double getAttendancePercentage() {
+		return attendancePercentage;
 	}
 }

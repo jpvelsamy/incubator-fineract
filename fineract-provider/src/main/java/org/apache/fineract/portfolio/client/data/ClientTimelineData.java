@@ -45,11 +45,17 @@ public class ClientTimelineData {
     private final String closedByUsername;
     private final String closedByFirstname;
     private final String closedByLastname;
+    private final BigDecimal totalBalance;
+    private final String activeProducts;
+    private final long activeLoans;
+    private final String closedProducts;
+    private final String closedStatus;
+    private final long closedLoans;
 
     public ClientTimelineData(final LocalDate submittedOnDate, final String submittedByUsername, final String submittedByFirstname,
             final String submittedByLastname, final LocalDate activatedOnDate, final String activatedByUsername,
             final String activatedByFirstname, final String activatedByLastname, final LocalDate closedOnDate,
-            final String closedByUsername, final String closedByFirstname, final String closedByLastname) {
+            final String closedByUsername, final String closedByFirstname, final String closedByLastname, BigDecimal totalBalance, String activeProducts, long activeLoans, String closedProducts, String closedStatus, long closedLoans) {
         this.submittedOnDate = submittedOnDate;
         this.submittedByUsername = submittedByUsername;
         this.submittedByFirstname = submittedByFirstname;
@@ -64,6 +70,13 @@ public class ClientTimelineData {
         this.closedByUsername = closedByUsername;
         this.closedByFirstname = closedByFirstname;
         this.closedByLastname = closedByLastname;
+        this.closedLoans = closedLoans;
+        this.activeLoans = activeLoans;
+        this.totalBalance = totalBalance;
+        this.closedProducts = closedProducts;
+        this.activeProducts = activeProducts;
+        this.closedStatus = closedStatus;
+        
 
     }
 

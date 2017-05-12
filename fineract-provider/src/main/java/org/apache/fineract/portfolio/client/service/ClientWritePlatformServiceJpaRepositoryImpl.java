@@ -43,6 +43,7 @@ import org.apache.fineract.infrastructure.core.data.CommandProcessingResult;
 import org.apache.fineract.infrastructure.core.data.CommandProcessingResultBuilder;
 import org.apache.fineract.infrastructure.core.exception.PlatformDataIntegrityException;
 import org.apache.fineract.infrastructure.core.serialization.FromJsonHelper;
+import org.apache.fineract.infrastructure.core.service.RoutingDataSource;
 import org.apache.fineract.infrastructure.dataqueries.data.EntityTables;
 import org.apache.fineract.infrastructure.dataqueries.data.StatusEnum;
 import org.apache.fineract.infrastructure.dataqueries.service.EntityDatatableChecksWritePlatformService;
@@ -124,6 +125,8 @@ public class ClientWritePlatformServiceJpaRepositoryImpl implements ClientWriteP
     private final AddressWritePlatformService addressWritePlatformService;
     private final BusinessEventNotifierService businessEventNotifierService;
     private final EntityDatatableChecksWritePlatformService entityDatatableChecksWritePlatformService;
+    private final RoutingDataSource dataSource;
+    
     @Autowired
     public ClientWritePlatformServiceJpaRepositoryImpl(final PlatformSecurityContext context,
             final ClientRepositoryWrapper clientRepository, final ClientNonPersonRepositoryWrapper clientNonPersonRepository,
@@ -136,7 +139,9 @@ public class ClientWritePlatformServiceJpaRepositoryImpl implements ClientWriteP
             final CommandProcessingService commandProcessingService, final ConfigurationDomainService configurationDomainService,
             final AccountNumberFormatRepositoryWrapper accountNumberFormatRepository, final FromJsonHelper fromApiJsonHelper,
             final ConfigurationReadPlatformService configurationReadPlatformService,
-            final AddressWritePlatformService addressWritePlatformService, final BusinessEventNotifierService businessEventNotifierService,
+            final AddressWritePlatformService addressWritePlatformService,
+            final RoutingDataSource dataSource,
+            final BusinessEventNotifierService businessEventNotifierService,
             final EntityDatatableChecksWritePlatformService entityDatatableChecksWritePlatformService) {
         this.context = context;
         this.clientRepository = clientRepository;
@@ -160,6 +165,7 @@ public class ClientWritePlatformServiceJpaRepositoryImpl implements ClientWriteP
         this.addressWritePlatformService = addressWritePlatformService;
         this.businessEventNotifierService = businessEventNotifierService;
         this.entityDatatableChecksWritePlatformService = entityDatatableChecksWritePlatformService;
+        this.dataSource = dataSource;
     }
 
     @Transactional
@@ -196,19 +202,26 @@ public class ClientWritePlatformServiceJpaRepositoryImpl implements ClientWriteP
      */
     private void handleDataIntegrityIssues(final JsonCommand command, final Throwable realCause, final Exception dve) {
 
+    	
         if (realCause.getMessage().contains("external_id")) {
 
             final String externalId = command.stringValueOfParameterNamed("externalId");
-            throw new PlatformDataIntegrityException("error.msg.client.duplicate.externalId", "Client with externalId `" + externalId
-                    + "` already exists", "externalId", externalId);
+            String errorInfo = DataCheckUtil.fetchExternalIdOwner(externalId, dataSource);
+            
+            throw new PlatformDataIntegrityException("error.msg.client.duplicate.externalId", "External id with externalId `" + externalId
+                    + "` already exists", "externalId ", externalId + " belongs to " + errorInfo);
         } else if (realCause.getMessage().contains("account_no_UNIQUE")) {
             final String accountNo = command.stringValueOfParameterNamed("accountNo");
+            String errorInfo = AccountNoCheckUtil.fetchaccountNoOwner(accountNo, dataSource);
+            
             throw new PlatformDataIntegrityException("error.msg.client.duplicate.accountNo", "Client with accountNo `" + accountNo
-                    + "` already exists", "accountNo", accountNo);
+                    + "` already exists", "accountNo", accountNo + " belongs to " + errorInfo);
         } else if (realCause.getMessage().contains("mobile_no")) {
             final String mobileNo = command.stringValueOfParameterNamed("mobileNo");
+            String errorInfo = MobileNoCheckUtil.fetchmobileNoOwner(mobileNo, dataSource);
+            
             throw new PlatformDataIntegrityException("error.msg.client.duplicate.mobileNo", "Client with mobileNo `" + mobileNo
-                    + "` already exists", "mobileNo", mobileNo);
+                    + "` already exists", "mobileNo", mobileNo + " belongs to " + errorInfo);
         }
 
         logAsErrorUnexpectedDataIntegrityException(dve);
@@ -308,6 +321,7 @@ public class ClientWritePlatformServiceJpaRepositoryImpl implements ClientWriteP
                 AccountNumberFormat accountNumberFormat = this.accountNumberFormatRepository.findByAccountType(EntityAccountType.CLIENT);
                 newClient.updateAccountNo(accountNumberGenerator.generate(newClient, accountNumberFormat));
                 this.clientRepository.save(newClient);
+                
             }
                         
             final Locale locale = command.extractLocale();
@@ -545,7 +559,7 @@ public class ClientWritePlatformServiceJpaRepositoryImpl implements ClientWriteP
 
     @Transactional
     @Override
-    public CommandProcessingResult activateClient(final Long clientId, final JsonCommand command) {
+    public CommandProcessingResult activateClient(final Long clientId, final JsonCommand command){
         try {
             this.fromApiJsonDeserializer.validateActivation(command);
 

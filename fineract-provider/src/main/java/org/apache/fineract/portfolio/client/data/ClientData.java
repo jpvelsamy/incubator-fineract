@@ -113,7 +113,7 @@ final public class ClientData implements Comparable<ClientData> {
     private final String closedProducts;
     private final String activeProducts;
     private final String closedStatus;
-    private final double attendancePercentage;
+    private final float attendancePercentage;
 
     public static ClientData template(final Long officeId, final LocalDate joinedDate, final Collection<OfficeData> officeOptions,
             final Collection<StaffData> staffOptions, final Collection<CodeValueData> narrations,
@@ -121,7 +121,7 @@ final public class ClientData implements Comparable<ClientData> {
             final Collection<CodeValueData> clientTypeOptions, final Collection<CodeValueData> clientClassificationOptions, final Collection<CodeValueData> clientNonPersonConstitutionOptions,
             final Collection<CodeValueData> clientNonPersonMainBusinessLineOptions, final List<EnumOptionData> clientLegalFormOptions, final AddressData address,
             final Boolean isAddressEnabled, final List<DatatableData> datatables, final long closedLoans, final long activeLoans, final BigDecimal totalBalance, final String closedProducts, 
-     		final String activeProducts, final String closedStatus, final double attendancePercentage) {
+     		final String activeProducts, final String closedStatus, final float attendancePercentage) {
         final String accountNo = null;
         final EnumOptionData status = null;
         final CodeValueData subStatus = null;
@@ -211,7 +211,7 @@ final public class ClientData implements Comparable<ClientData> {
 
     public static ClientData clientIdentifier(final Long id, final String accountNo, final String firstname, final String middlename,
             final String lastname, final String fullname, final String displayName, final Long officeId, final String officeName, final long closedLoans, final long activeLoans, final BigDecimal totalBalance, final String closedProducts, 
-     		final String activeProducts, final String closedStatus, final double attendancePercentage) {
+     		final String activeProducts, final String closedStatus, final float attendancePercentage) {
 
         final Long transferToOfficeId = null;
         final String transferToOfficeName = null;
@@ -307,7 +307,7 @@ final public class ClientData implements Comparable<ClientData> {
             final LocalDate activationDate, final Long imageId, final Long staffId, final String staffName,
             final ClientTimelineData timeline, final Long savingsProductId, final String savingsProductName, final Long savingsAccountId,
             final CodeValueData clientType, final CodeValueData clientClassification, final EnumOptionData legalForm, final ClientNonPersonData clientNonPerson, final long closedLoans, final long activeLoans, final BigDecimal totalBalance, final String closedProducts, 
-     		final String activeProducts, final String closedStatus, final double attendancePercentage) {
+     		final String activeProducts, final String closedStatus, final float attendancePercentage) {
 
         final Collection<OfficeData> allowedOffices = null;
         final Collection<GroupGeneralData> groups = null;
@@ -345,7 +345,7 @@ final public class ClientData implements Comparable<ClientData> {
             final Collection<CodeValueData> clientNonPersonMainBusinessLineOptions, final ClientNonPersonData clientNonPerson,
             final List<EnumOptionData> clientLegalFormOptions, final EnumOptionData legalForm, final AddressData address,
             final Boolean isAddressEnabled, final List<DatatableData> datatables, final long closedLoans, final long activeLoans, final BigDecimal totalBalance, final String closedProducts, 
-            final String activeProducts, final String closedStatus, final double attendancePercentage) {
+            final String activeProducts, final String closedStatus, final float attendancePercentage) {
         this.accountNo = accountNo;
         this.status = status;
         if (status != null) {
@@ -528,7 +528,7 @@ final public class ClientData implements Comparable<ClientData> {
 		return closedStatus;
 	}
 
-	public double getAttendancePercentage() {
+	public float getAttendancePercentage() {
 		return attendancePercentage;
 	}
 }

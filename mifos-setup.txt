@@ -1381,6 +1381,9 @@ NOTE  - Setting up the cron tab for execution
 https://askubuntu.com/questions/2368/how-do-i-set-up-a-cron-job
 https://help.ubuntu.com/community/CronHowto
 
+Note:
+ Comment this file (vim /etc/pam.d/cron) and install rsyslog to run the crontab
+
 */59 * * * * mysql -uroot -ppassword mifostenant-default -e "CALL day_sheet_generator;"
 
 

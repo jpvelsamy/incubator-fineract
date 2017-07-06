@@ -1386,6 +1386,12 @@ Note:
 
 */59 * * * * mysql -uroot -ppassword mifostenant-default -e "CALL day_sheet_generator;"
 
+Created a new stored procedure client_generator() to display the details of the clients in group page in chimera by 
+deleting the views and created a table for those views and set an index for the cloumn in the tables like
+alter table ATTENDANCE_BY_CLIENT_DIV add index idx_id(client_id);
+
+
+
 
 DELIMITER ;
 DROP PROCEDURE IF EXISTS day_sheet_generator;

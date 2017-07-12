@@ -51,11 +51,12 @@ public class ClientTimelineData {
     private final String closedProducts;
     private final String closedStatus;
     private final long closedLoans;
-
+    private final float attendancePercentage;
+    
     public ClientTimelineData(final LocalDate submittedOnDate, final String submittedByUsername, final String submittedByFirstname,
             final String submittedByLastname, final LocalDate activatedOnDate, final String activatedByUsername,
             final String activatedByFirstname, final String activatedByLastname, final LocalDate closedOnDate,
-            final String closedByUsername, final String closedByFirstname, final String closedByLastname, BigDecimal totalBalance, String activeProducts, long activeLoans, String closedProducts, String closedStatus, long closedLoans) {
+            final String closedByUsername, final String closedByFirstname, final String closedByLastname, BigDecimal totalBalance, String activeProducts, long activeLoans, String closedProducts, String closedStatus, long closedLoans, float attendancePercentage) {
         this.submittedOnDate = submittedOnDate;
         this.submittedByUsername = submittedByUsername;
         this.submittedByFirstname = submittedByFirstname;
@@ -76,6 +77,8 @@ public class ClientTimelineData {
         this.closedProducts = closedProducts;
         this.activeProducts = activeProducts;
         this.closedStatus = closedStatus;
+        this.attendancePercentage = attendancePercentage;
+       
         
 
     }

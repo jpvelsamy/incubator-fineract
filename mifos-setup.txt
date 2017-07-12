@@ -308,8 +308,8 @@ CREATING A NEW SUBNET FOR THE DBMC
 			1. Clone jpvelsamy/tomcat into Landingmachine
 			2. Use tomcat 7/jre8 version - that means   you need to go to appropriate folder . do not use alpine for now
 			sudo docker build -t dbmc/tomcat:7.0.75 .
-			3. sudo docker run -it -h  dbmc-appserver-node --ip 172.18.0.2 --add-host dbmc-mysql-node:172.18.0.5 --add-host dbmc-webserver-node:172.18.0.6 --net dbmc-net -p 0.0.0.0:8080:8080 -p 0.0.0.0:443:8443 -d dbmc/tomcat:7.0.75
-			4. sudo docker exec -it --user root [container id] /bin/bash
+			3. sudo docker run -it -h  dbmc-appserver-node --ip 172.18.0.2 --add-host dbmc-mysql-node:172.18.0.5 --add-host dbmc-webserver-node:172.18.0.6 --net dbmc-net -p 0.0.0.0:8080:8080 -p 0.0.0.0:443:8443 -d dbmc/tomcat:7.0.78
+			4. sudo docker exec -it --user root romantic_shockley /bin/bash
 			5. Create the keystore
 				https://mifosforge.jira.com/wiki/display/docs/Mifos+X+Installation+on+Linux+-+Ubuntu+Server
 
@@ -1414,3 +1414,55 @@ org.apache.fineract.portfolio.group.service.CenterReadPlatformServiceImpl.Center
 https://localhost:8443/fineract-provider/api/v1/clients/2467/accounts
 
 
+Uptodate - Profit and loss report
+------------------------------------------------
+
+DROP TABLE IF EXISTS PROFIT_AND_LOSS_STATEMENT;
+CREATE TABLE  PROFIT_AND_LOSS_STATEMENT(
+uptodate DATE NOT NULL, 
+office_id bigint,
+income_desc varchar(40),
+expenses_desc varchar (40),
+credit decimal(19,6), 
+debit decimal(19,6) 
+) ENGINE=INNODB DEFAULT CHARSET=UTF8;
+
+DROP PROCEDURE generate_profitandloss;
+DELIMITER $$
+CREATE PROCEDURE generate_profitandloss()
+ BEGIN
+ DECLARE office_done BOOLEAN DEFAULT FALSE;	
+ DECLARE officeid INT DEFAULT 0;
+ DECLARE uptodate DATE DEFAULT curdate();
+ 
+ DECLARE income VARCHAR(40);
+ DECLARE expenses VARCHAR(40);
+ DECLARE credit DECIMAL(19,6);
+ DECLARE debit DECIMAL(19,6);
+ DECLARE office_cursor CURSOR FOR select DISTINCT office_id as office_id from acc_gl_journal_entry;
+ DECLARE CONTINUE HANDLER FOR NOT FOUND SET office_done = TRUE;
+
+ OPEN office_cursor;
+  prepare_profitandloss:LOOP
+   FETCH office_cursor INTO officeid;
+    IF office_done THEN 
+     CLOSE office_cursor;
+     LEAVE prepare_profitandloss;
+    END IF;  
+
+    INSERT INTO PROFIT_AND_LOSS_STATEMENT(uptodate, office_id, income_desc, credit) 
+    SELECT uptodate, officeid, "Interest collected", SUM(je.amount) as credit from acc_gl_journal_entry je INNER JOIN acc_gl_account acc ON je.account_id=acc.id AND je.type_enum=1 AND acc.classification_enum=4 and acc.name='interest' and je.office_d=officeid;
+
+    INSERT INTO PROFIT_AND_LOSS_STATEMENT(uptodate, office_id, expense_desc, debit)
+    SELECT uptodate, officeid, acc.name, SUM(je.amount) as debit from acc_gl_journal_entry je INNER JOIN acc_gl_account acc ON je.account_id=acc.id WHERE je.type_enum=1 AND acc.classification_enum=5 AND je.office_id=officeid group by acc.name;
+
+  END LOOP prepare_profitandloss;
+END $$ 
+DELIMITER ;
+
+
+
+INSERT INTO CREDIT_VS_DEBIT_UPDATE (uptodate,office_id,income,classification_type_enum,credit) SELECT  uptodate as uptodate,je.office_id, acc.classification_enum as classification_type_enum, acc.name as income , SUM(je.amount) as credit  FROM acc_gl_journal_entry je INNER JOIN acc_gl_account acc ON je.account_id=acc.id WHERE type_enum=1 group by acc.classification_enum, je.office_id;
+
+
+INSERT INTO CREDIT_VS_DEBIT_UPDATE (uptodate,office_id,expenses,classification_type_enum,debit) SELECT uptodate as uptodate,je.office_id,acc.classification_enum as classification_type_enum,acc.name as expenses , SUM(je.amount) as debit FROM acc_gl_journal_entry je INNER JOIN acc_gl_account acc ON je.account_id=acc.id WHERE type_enum=2 group by acc.classification_enum, je.office_id;

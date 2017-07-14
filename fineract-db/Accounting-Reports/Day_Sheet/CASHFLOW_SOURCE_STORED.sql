@@ -160,7 +160,7 @@ BEGIN
    	    SELECT entryDate, officeid, CONCAT("Collection for ",a.display_name) as details, SUM(amount) as credit, 0 as debit, 3 as entry_order FROM BRANCHWISE_INBOUND_CASH_SYSTEM a WHERE a.entry_date=entryDate AND office_id=officeid GROUP BY a.display_name;
 
    	    INSERT INTO CASHFLOW_SOURCE(entry_date, office_id, details, credit, debit, entry_order) 
-   	    SELECT entryDate, officeid, CONCAT("Loan disbursal for ",a.display_name) as details, 0 as credit, SUM(amount) as debit, 4 as entry_order FROM BRANCHWISE_OUTBOUND_CASH_SYSTEM a WHERE a.entry_date=entryDate AND office_id=officeid GROUP BY a.office_id;
+   	    SELECT entryDate, officeid, CONCAT("Loan disbursal for ",a.display_name) as details, 0 as credit, SUM(amount) as debit, 4 as entry_order FROM BRANCHWISE_OUTBOUND_CASH_SYSTEM a WHERE a.entry_date=entryDate AND office_id=officeid GROUP BY a.office_id, a.display_name;
 
    	    INSERT INTO CASHFLOW_SOURCE(entry_date, office_id, details, credit, debit, entry_order) 
         SELECT entryDate, officeid, a.name as details, 0 AS credit, amount as debit, 5 as entry_order from BRANCHWISE_OUTBOUND_CASH_MANUAL a WHERE a.entry_date=entryDate AND office_id=officeid;

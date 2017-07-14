@@ -87,6 +87,14 @@ public class ScheduledJobRunnerServiceImpl implements ScheduledJobRunnerService 
 
     @Transactional
     @Override
+    @CronTarget(jobName = JobName.GENERATE_BALANCE_SHEET)
+    public void generateBalanceSheet()
+    {
+    	
+    }
+    
+    @Transactional
+    @Override
     @CronTarget(jobName = JobName.UPDATE_LOAN_SUMMARY)
     public void updateLoanSummaryDetails() {
 

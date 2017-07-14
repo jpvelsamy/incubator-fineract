@@ -21,7 +21,7 @@ INNER JOIN m_loan_transaction mlt ON jl.loan_transaction_id=mlt.id
 INNER JOIN m_loan ml ON ml.id=mlt.loan_id
 INNER JOIN m_group mg ON ml.group_id=mg.id
 WHERE (jl.account_id=2 or jl.account_id=92) and jl.reversed=0 AND jl.type_enum=1
-group by account_type.name, mg.display_name, jl.office_id, jl.entry_date;
+group by jl.account_id, account_type.name, mg.display_name, jl.office_id, jl.entry_date;
 
 DROP TABLE IF EXISTS BRANCHWISE_OUTBOUND_CASH_MANUAL;
 
@@ -52,7 +52,7 @@ INNER JOIN m_loan_transaction mlt ON jl.loan_transaction_id=mlt.id
 INNER JOIN m_loan ml ON ml.id=mlt.loan_id
 INNER JOIN m_group mg ON ml.group_id=mg.id
 WHERE jl.account_id IN (5,6,94,95,84,92) AND jl.type_enum=1 and jl.manual_entry=0 and jl.reversed=0
-group by account_type.name, mg.display_name, jl.office_id, jl.entry_date;
+group by jl.account_id, account_type.name, mg.display_name, jl.office_id, jl.entry_date;
 
 DROP TABLE IF EXISTS BRANCHWISE_INBOUND_CASH_MANUAL;
 

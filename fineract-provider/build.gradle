@@ -87,6 +87,7 @@ rat {
   verbose = true 
   inputDir = './..'
  excludes = [
+	'fineract-db/**',
 	'**/*.sql',	
 	'.recommenders/**',	
 	'.metadata/**',
